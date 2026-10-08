@@ -37,7 +37,7 @@ router.post('/send', authenticateToken, async (req: ApiAuthRequest<SendCVRequest
     const db = getDb();
 
     // Enforce screen access server-side — never trust the client's routing/UI gate
-    if (currentUser.role !== 'it') {
+    if (currentUser.role !== 'it' && currentUser.role !== 'external') {
       const granted = await db.get(
         `SELECT so.user_id
          FROM screen_overrides so
