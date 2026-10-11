@@ -1607,7 +1607,7 @@ export const Attendance: React.FC<AttendanceProps> = ({
             }
             return <></>;
           })()}
-          {resolvedViewMode === 'summary' && (canViewAll || canViewDepartment) && (!isFactory || !isTodaySundayPKT()) ? (
+          {resolvedViewMode === 'summary' && (canViewAll || canViewDepartment) && (!isTodaySundayPKT() || isFactory) ? (
             <div
               style={{
                 display: 'flex',
