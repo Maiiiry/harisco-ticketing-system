@@ -27,11 +27,15 @@ router.post('/send', authenticateToken, async (req: ApiAuthRequest<SendCVRequest
     return res.status(401).json({ error: 'Unauthorized. User data missing.' });
   }
 
-  const { candidateName, candidateEmail, pdfBase64, fileName } = req.body;
+    const { candidateName, candidateEmail, pdfBase64, fileName } = req.body;
 
-  if (!candidateName || !pdfBase64 || !fileName) {
-    return res.status(400).json({ error: 'Missing required fields: candidateName, pdfBase64, fileName.' });
-  }
+    if (!candidateName || !pdfBase64 || !fileName) {
+      return res.status(400).json({ error: 'Missing required fields: candidateName, pdfBase64, fileName.' });
+    }
+
+    // Sanitize filename to ASCII to avoid SMTP "WinAsi cannot encode" errors on Windows
+    // caused by non-ASCII (e.g. Urdu/Arabic) characters in the attachment filename
+    const safeFileName = fileName.replace(/[^\x00-\x7F]/g, '_').replace(/[^a-zA-Z0-9._-]/g, '_') || 'cv.pdf';
 
   try {
     const db = getDb();
@@ -87,7 +91,7 @@ router.post('/send', authenticateToken, async (req: ApiAuthRequest<SendCVRequest
     for (const email of recipients) {
       const sent = await sendEmailWithAttachment(email, subject, body, [
         {
-          filename: fileName,
+          filename: safeFileName,
           content: pdfBase64,
           contentType: 'application/pdf',
         },
