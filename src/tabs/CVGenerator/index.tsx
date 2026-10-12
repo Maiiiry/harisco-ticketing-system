@@ -643,7 +643,8 @@ export const CVGenerator: React.FC<CVGeneratorProps> = ({ currentUser, token, al
     setIsSubmitting(true);
     try {
       const pdfBlob = await generateApplicationPdf(data, photoFile || undefined);
-      const pdfName = `CV_${fullName.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+      const safeName = (fullName || currentUser.name).replace(/[^a-zA-Z0-9]+/g, '_');
+      const pdfName = `CV_${safeName}_${Date.now()}.pdf`;
       const base64Pdf = await blobToBase64(pdfBlob);
 
       const response = await fetch('/api/cv-generator/send', {
