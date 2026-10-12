@@ -24,6 +24,20 @@ const MARGIN_TOP = 120;
 const MARGIN_BOTTOM = 60;
 const CONTENT_WIDTH = A4_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
 
+// pdf-lib's standard (Helvetica) fonts are encoded as WinAnsi (Latin-1). They cannot
+// encode control characters (e.g. tab \t 0x09, carriage return \r 0x0d) or characters
+// above 0xFF (e.g. Urdu/Arabic). Passing such characters to widthOfTextAtSize/drawText
+// throws "WinAnsi cannot encode ...". This helper normalizes line endings and strips
+// every character outside the encodable range, keeping newlines (\n) as line separators.
+const sanitizeForPdf = (text: string | null | undefined): string => {
+  if (text == null) return '';
+  return String(text)
+    .replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, ' ')
+    .replace(/[^\u0020-\u00FF\n]/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+};
+
 const BRAND_COLOR = rgb(14 / 255, 82 / 255, 155 / 255);
 const BRAND_LIGHT = rgb(0.95, 0.97, 1);
 const TEXT_COLOR = rgb(0.15, 0.15, 0.15);
@@ -78,7 +92,8 @@ const wrapText = (
   maxWidth: number,
   font: { widthOfTextAtSize: (t: string, s: number) => number }
 ): string[] => {
-  if (!text) return [];
+  const sanitized = sanitizeForPdf(text);
+  if (!sanitized) return [];
   const FONT_SIZE = 9;
   const lines: string[] = [];
 
