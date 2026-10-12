@@ -27,15 +27,22 @@ const CONTENT_WIDTH = A4_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
 // pdf-lib's standard (Helvetica) fonts are encoded as WinAnsi (Latin-1). They cannot
 // encode control characters (e.g. tab \t 0x09, carriage return \r 0x0d) or characters
 // above 0xFF (e.g. Urdu/Arabic). Passing such characters to widthOfTextAtSize/drawText
-// throws "WinAnsi cannot encode ...". This helper normalizes line endings and strips
-// every character outside the encodable range, keeping newlines (\n) as line separators.
+// throws "WinAnsi cannot encode ...". This helper replaces every character outside the
+// encodable range (newline \n and printable Latin-1 0x20-0xFF) with a space, so the
+// PDF always renders without crashing. (A Unicode font would be needed to render
+// non-Latin scripts; until then those are replaced with a space rather than crashing.)
 const sanitizeForPdf = (text: string | null | undefined): string => {
   if (text == null) return '';
-  return String(text)
-    .replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, ' ')
-    .replace(/[^\u0020-\u00FF\n]/g, ' ')
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n');
+  let out = '';
+  for (const ch of String(text)) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (code === 0x0a /* \n */ || (code >= 0x20 && code <= 0xff)) {
+      out += ch;
+    } else {
+      out += ' ';
+    }
+  }
+  return out;
 };
 
 const BRAND_COLOR = rgb(14 / 255, 82 / 255, 155 / 255);
@@ -113,7 +120,7 @@ const wrapText = (
     return broken.length ? broken : [word];
   };
 
-  for (const hardLine of text.split('\n')) {
+  for (const hardLine of sanitized.split('\n')) {
     const words = hardLine.split(' ');
     let currentLine = '';
 
