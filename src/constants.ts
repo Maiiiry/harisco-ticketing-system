@@ -2,6 +2,7 @@ import type {
   AdminTicketCategory,
   AdminTicketStatus,
   AppUser,
+  InventoryStatus,
   HSECategory,
   HSEStatus,
   TicketStatus,
@@ -278,5 +279,47 @@ export const HSE_STATUS_OPTIONS = [
     label: 'Closed',
     color: '#10b981',
     bg: 'rgba(16, 185, 129, 0.12)',
+  },
+];
+
+// Inventory Status Constants
+export const INVENTORY_STATUS_LABELS: Record<InventoryStatus, string> = {
+  Stocked: 'Stocked',
+  Assigned: 'Assigned',
+  'Under Repair': 'Under Repair',
+  Retired: 'Retired',
+  Lost: 'Lost',
+};
+
+export const INVENTORY_STATUS_OPTIONS = [
+  {
+    value: 'Stocked' as InventoryStatus,
+    label: 'Stocked',
+    color: '#64748b',
+    bg: 'rgba(100, 116, 139, 0.12)',
+  },
+  {
+    value: 'Assigned' as InventoryStatus,
+    label: 'Assigned',
+    color: '#0e529b',
+    bg: 'rgba(14, 82, 155, 0.12)',
+  },
+  {
+    value: 'Under Repair' as InventoryStatus,
+    label: 'Under Repair',
+    color: '#f59e0b',
+    bg: 'rgba(245, 158, 11, 0.12)',
+  },
+  {
+    value: 'Retired' as InventoryStatus,
+    label: 'Retired',
+    color: '#ef4444',
+    bg: 'rgba(239, 68, 68, 0.12)',
+  },
+  {
+    value: 'Lost' as InventoryStatus,
+    label: 'Lost',
+    color: '#dc2626',
+    bg: 'rgba(220, 38, 38, 0.12)',
   },
 ];

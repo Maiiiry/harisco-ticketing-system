@@ -6,6 +6,8 @@ import type {
   AdminTicketCategory,
   AdminTicketStatus,
   AppUser,
+  Inventory,
+  InventoryStatus,
   CreateExternalUserResponse,
   HSECategory,
   HSEStatus,
@@ -24,12 +26,14 @@ import { ExternalUserManagement } from './components/ExternalUserManagement';
 import { FactoryUserManagement } from './components/FactoryUserManagement';
 import { HSETicketDetails } from './components/HSETicketDetails';
 import { HSETicketList } from './components/HSETicketList';
+import { AssignInventoryModal } from './components/Modals/AssignInventoryModal';
 import { ChangePasswordModal } from './components/Modals/ChangePasswordModal';
 import { CreateNoticeModal } from './components/Modals/CreateNoticeModal';
 import { EditNoticeModal } from './components/Modals/EditNoticeModal';
 import { NewAdminTicketModal } from './components/Modals/NewAdminTicketModal';
 import { NewHSETicketModal } from './components/Modals/NewHSETicketModal';
 import { NewTicketModal } from './components/Modals/NewTicketModal';
+import { RegisterInventoryModal } from './components/Modals/RegisterInventoryModal';
 import { PasswordReset } from './components/PasswordReset';
 import { Header } from './components/Sidebar';
 import { TicketDetails } from './components/TicketDetails';
@@ -38,6 +42,7 @@ import { UserManagement } from './components/UserManagement';
 import { ADMIN_TICKET_STATUS_LABELS, APP_TITLE, HSE_STATUS_LABELS, STATUS_LABELS } from './constants';
 import { ActivityLog } from './tabs/ActivityLogs';
 import { CVGenerator } from './tabs/CVGenerator';
+import { InventoryTab } from './tabs/Inventory';
 import { LeaveManagement } from './tabs/LeaveManagement';
 import { Login } from './tabs/Login';
 import { NoticeBoard } from './tabs/Noticeboard';
@@ -76,6 +81,8 @@ function canUserAccessTab(
       return ['it', 'manager', 'factory_it', 'factory_manager', 'factory_employee'].includes(role);
     case 'external_users':
       return role === 'it';
+    case 'inventory':
+      return ['it', 'manager', 'executive'].includes(role);
     default:
       return false;
   }
@@ -112,6 +119,7 @@ function pathToTab(pathname: string): {
     'factory-users': 'factory_users',
     'factory-attendance': 'factory_attendance',
     'external-users': 'external_users',
+    inventory: 'inventory',
   };
 
   if (parts.length === 0) return { tab: 'noticeboard', ticketId: null };
@@ -207,6 +215,11 @@ function App() {
     attendanceSelectedUserIdRef.current = attendanceSelectedUserId;
   });
   const [cvGeneratorAllowed, setCvGeneratorAllowed] = useState<boolean>(false);
+
+  // Inventory Tracking state
+  const [inventory, setInventory] = useState<Inventory[]>([]);
+  const [isRegisterInventoryModalOpen, setIsRegisterInventoryModalOpen] = useState<boolean>(false);
+  const [selectedInventoryIdForAssign, setSelectedInventoryIdForAssign] = useState<string | null>(null);
 
   const handleAttendanceViewModeChange = (mode: 'summary' | 'individual', userId?: string) => {
     if (mode === 'individual') {
@@ -451,6 +464,15 @@ function App() {
         if (externalUsersRes.ok) {
           const externalUsersData = await externalUsersRes.json();
           setExternalUsers(externalUsersData);
+        }
+
+        // Fetch inventory
+        const inventoryRes = await fetch('/api/inventory', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (inventoryRes.ok) {
+          const inventoryData = await inventoryRes.json();
+          setInventory(inventoryData);
         }
       } catch (err) {
         console.error('Session verification failed:', err);
@@ -1510,12 +1532,12 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-                ...u,
-                is_active: 0,
-                offboarded_at: offboardDate,
-                offboarded_by: currentUser.id,
-                offboard_reason: reason,
-              }
+              ...u,
+              is_active: 0,
+              offboarded_at: offboardDate,
+              offboarded_by: currentUser.id,
+              offboard_reason: reason,
+            }
             : u
         )
       );
@@ -1561,16 +1583,16 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-                ...u,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                department: updatedUser.department,
-                designation: updatedUser.designation,
-                avatar: updatedUser.avatar,
-                role: updatedUser.role,
-                isDepartmentHead: updatedUser.isDepartmentHead,
-                loginEnabled: updatedUser.loginEnabled,
-              }
+              ...u,
+              name: updatedUser.name,
+              email: updatedUser.email,
+              department: updatedUser.department,
+              designation: updatedUser.designation,
+              avatar: updatedUser.avatar,
+              role: updatedUser.role,
+              isDepartmentHead: updatedUser.isDepartmentHead,
+              loginEnabled: updatedUser.loginEnabled,
+            }
             : u
         )
       );
@@ -1665,12 +1687,12 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-                ...u,
-                is_active: 0,
-                offboarded_at: offboardDate,
-                offboarded_by: currentUser.id,
-                offboard_reason: reason,
-              }
+              ...u,
+              is_active: 0,
+              offboarded_at: offboardDate,
+              offboarded_by: currentUser.id,
+              offboard_reason: reason,
+            }
             : u
         )
       );
@@ -1715,16 +1737,16 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-                ...u,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                department: updatedUser.department,
-                designation: updatedUser.designation,
-                avatar: updatedUser.avatar,
-                isDepartmentHead: updatedUser.isDepartmentHead,
-                loginEnabled: updatedUser.loginEnabled,
-                defaultShift: updatedUser.defaultShift,
-              }
+              ...u,
+              name: updatedUser.name,
+              email: updatedUser.email,
+              department: updatedUser.department,
+              designation: updatedUser.designation,
+              avatar: updatedUser.avatar,
+              isDepartmentHead: updatedUser.isDepartmentHead,
+              loginEnabled: updatedUser.loginEnabled,
+              defaultShift: updatedUser.defaultShift,
+            }
             : u
         )
       );
@@ -1813,15 +1835,133 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-                ...u,
-                username: updatedUser.username,
-              }
+              ...u,
+              username: updatedUser.username,
+            }
             : u
         )
       );
     } catch (err) {
       console.error(err);
       const errMsg = err instanceof Error ? err.message : 'Error updating external user. Please try again.';
+      alert(errMsg);
+    }
+  };
+
+  // Inventory Tracking handlers
+  const handleCreateInventory = async (data: {
+    company: string;
+    entity: string;
+    specs: string;
+    device_id: string;
+    sn_mac_address: string;
+  }) => {
+    if (!token || !currentUser) return;
+    try {
+      const res = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to register inventory');
+      }
+
+      const newInventory = await res.json();
+      setInventory((prevInventory) => [newInventory, ...prevInventory]);
+      setIsRegisterInventoryModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      const errMsg = err instanceof Error ? err.message : 'Error registering inventory. Please try again.';
+      alert(errMsg);
+    }
+  };
+
+  const handleUpdateInventory = async (id: string, patch: {
+    status?: InventoryStatus;
+    assigned_user_id?: string | null;
+  }) => {
+    if (!token || !currentUser) return;
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(patch),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update inventory');
+      }
+
+      const updatedInventory = await res.json();
+      setInventory((prevInventory) =>
+        prevInventory.map((a) => (a.id === id ? updatedInventory : a))
+      );
+    } catch (err) {
+      console.error(err);
+      const errMsg = err instanceof Error ? err.message : 'Error updating inventory. Please try again.';
+      alert(errMsg);
+    }
+  };
+
+  const handleAssignInventory = async (id: string, userId: string) => {
+    if (!token || !currentUser) return;
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: 'Assigned', assigned_user_id: userId }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to assign inventory');
+      }
+
+      const updatedInventory = await res.json();
+      setInventory((prevInventory) =>
+        prevInventory.map((a) => (a.id === id ? updatedInventory : a))
+      );
+      setSelectedInventoryIdForAssign(null);
+    } catch (err) {
+      console.error(err);
+      const errMsg = err instanceof Error ? err.message : 'Error assigning inventory. Please try again.';
+      alert(errMsg);
+    }
+  };
+
+  const handleDeleteInventory = async (id: string) => {
+    if (!token || !currentUser) return;
+    if (!window.confirm('Are you sure you want to delete this inventory?')) return;
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to delete inventory');
+      }
+
+      setInventory((prevInventory) => prevInventory.filter((a) => a.id !== id));
+    } catch (err) {
+      console.error(err);
+      const errMsg = err instanceof Error ? err.message : 'Error deleting inventory. Please try again.';
       alert(errMsg);
     }
   };
@@ -1935,6 +2075,17 @@ function App() {
               onAddUser={handleAddExternalUser}
               onDeleteUser={handleDeleteExternalUser}
               onUpdateUser={handleUpdateExternalUser}
+              loading={loading}
+            />
+          ) : activeTab === 'inventory' ? (
+            <InventoryTab
+              inventory={inventory}
+              users={users}
+              currentUser={currentUser}
+              onRegisterClick={() => setIsRegisterInventoryModalOpen(true)}
+              onAssignOpen={(id) => setSelectedInventoryIdForAssign(id)}
+              onUpdateInventory={handleUpdateInventory}
+              onDeleteInventory={handleDeleteInventory}
               loading={loading}
             />
           ) : activeTab === 'attendance' ? (
@@ -2065,6 +2216,26 @@ function App() {
       {/* Change Password Modal */}
       {token && (
         <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} token={token} />
+      )}
+
+      {/* Register Inventory Modal */}
+      {isRegisterInventoryModalOpen && (
+        <RegisterInventoryModal
+          isOpen={isRegisterInventoryModalOpen}
+          onClose={() => setIsRegisterInventoryModalOpen(false)}
+          onSubmit={handleCreateInventory}
+        />
+      )}
+
+      {/* Assign Inventory Modal */}
+      {selectedInventoryIdForAssign && (
+        <AssignInventoryModal
+          inventoryId={selectedInventoryIdForAssign}
+          users={users}
+          isOpen={!!selectedInventoryIdForAssign}
+          onClose={() => setSelectedInventoryIdForAssign(null)}
+          onSubmit={handleAssignInventory}
+        />
       )}
     </div>
   );
