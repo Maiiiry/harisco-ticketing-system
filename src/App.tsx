@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type {
   ActiveTab,
@@ -7,6 +7,8 @@ import type {
   AdminTicketStatus,
   AppUser,
   Inventory,
+  InventoryCategory,
+  InventoryEntity,
   InventoryStatus,
   CreateExternalUserResponse,
   HSECategory,
@@ -220,6 +222,15 @@ function App() {
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [isRegisterInventoryModalOpen, setIsRegisterInventoryModalOpen] = useState<boolean>(false);
   const [selectedInventoryIdForAssign, setSelectedInventoryIdForAssign] = useState<string | null>(null);
+  const [invSubTab, setInvSubTab] = useState<'all' | 'stocked' | 'assigned'>('all');
+  const [invSearchQuery, setInvSearchQuery] = useState<string>('');
+  const [invCompanyFilter, setInvCompanyFilter] = useState<string>('all');
+  const [invEntityFilter, setInvEntityFilter] = useState<string>('all');
+
+  const allAssignableUsers = useMemo(
+    () => [...users, ...factoryUsers, ...externalUsers],
+    [users, factoryUsers, externalUsers]
+  );
 
   const handleAttendanceViewModeChange = (mode: 'summary' | 'individual', userId?: string) => {
     if (mode === 'individual') {
@@ -305,12 +316,38 @@ function App() {
     }
   }, [currentUser, syncUrl, cvGeneratorAllowed]);
 
+  // Refetch inventory when the inventory tab is activated
+  const fetchInventory = useCallback(async () => {
+    if (!token) return;
+    try {
+      const inventoryRes = await fetch('/api/inventory', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (inventoryRes.ok) {
+        const inventoryData = await inventoryRes.json();
+        setInventory(inventoryData);
+      } else {
+        console.error('Failed to fetch inventory:', inventoryRes.status);
+      }
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+    }
+  }, [token]);
+
   useEffect(() => {
     if (currentUser && !loading) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       enforceAccessControl();
     }
   }, [currentUser, loading, enforceAccessControl]);
+
+  // Refetch inventory when the inventory tab is activated
+  useEffect(() => {
+    if (activeTab === 'inventory' && token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchInventory();
+    }
+  }, [activeTab, token, fetchInventory]);
 
   const navigateToAttendanceIndividual = (userId: string) => {
     const path = tabToPath(activeTab, undefined, 'individual', userId);
@@ -356,7 +393,6 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentUser, cvGeneratorAllowed]);
 
-  // Load session and data
   useEffect(() => {
     const fetchSessionAndData = async () => {
       if (!token) {
@@ -467,13 +503,7 @@ function App() {
         }
 
         // Fetch inventory
-        const inventoryRes = await fetch('/api/inventory', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (inventoryRes.ok) {
-          const inventoryData = await inventoryRes.json();
-          setInventory(inventoryData);
-        }
+        await fetchInventory();
       } catch (err) {
         console.error('Session verification failed:', err);
         if (err instanceof Error && err.message === 'Session expired') {
@@ -1851,20 +1881,34 @@ function App() {
   // Inventory Tracking handlers
   const handleCreateInventory = async (data: {
     company: string;
-    entity: string;
-    specs: string;
+    entity: InventoryEntity;
+    category: InventoryCategory;
+    details: string;
     device_id: string;
     sn_mac_address: string;
+    assigned_user_id: string | null;
+    attachment: string | null;
   }) => {
     if (!token || !currentUser) return;
     try {
+      const payload: Record<string, unknown> = {
+        company: data.company,
+        entity: data.entity,
+        category: data.category,
+        details: data.details,
+        device_id: data.device_id,
+        sn_mac_address: data.sn_mac_address,
+        assigned_user_id: data.assigned_user_id,
+        attachment: data.attachment,
+      };
+
       const res = await fetch('/api/inventory', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -1875,6 +1919,15 @@ function App() {
       const newInventory = await res.json();
       setInventory((prevInventory) => [newInventory, ...prevInventory]);
       setIsRegisterInventoryModalOpen(false);
+
+      if (newInventory.status === 'Assigned') {
+        setInvSubTab('assigned');
+      } else {
+        setInvSubTab('stocked');
+      }
+      setInvSearchQuery('');
+      setInvCompanyFilter('all');
+      setInvEntityFilter('all');
     } catch (err) {
       console.error(err);
       const errMsg = err instanceof Error ? err.message : 'Error registering inventory. Please try again.';
@@ -2080,8 +2133,16 @@ function App() {
           ) : activeTab === 'inventory' ? (
             <InventoryTab
               inventory={inventory}
-              users={users}
+              users={allAssignableUsers}
               currentUser={currentUser}
+              defaultSubTab={invSubTab}
+              defaultSearchQuery={invSearchQuery}
+              defaultCompanyFilter={invCompanyFilter}
+              defaultEntityFilter={invEntityFilter}
+              onSubTabChange={setInvSubTab}
+              onSearchChange={setInvSearchQuery}
+              onCompanyFilterChange={setInvCompanyFilter}
+              onEntityFilterChange={setInvEntityFilter}
               onRegisterClick={() => setIsRegisterInventoryModalOpen(true)}
               onAssignOpen={(id) => setSelectedInventoryIdForAssign(id)}
               onUpdateInventory={handleUpdateInventory}
@@ -2223,6 +2284,7 @@ function App() {
         <RegisterInventoryModal
           isOpen={isRegisterInventoryModalOpen}
           onClose={() => setIsRegisterInventoryModalOpen(false)}
+          users={allAssignableUsers}
           onSubmit={handleCreateInventory}
         />
       )}
@@ -2231,7 +2293,7 @@ function App() {
       {selectedInventoryIdForAssign && (
         <AssignInventoryModal
           inventoryId={selectedInventoryIdForAssign}
-          users={users}
+          users={allAssignableUsers}
           isOpen={!!selectedInventoryIdForAssign}
           onClose={() => setSelectedInventoryIdForAssign(null)}
           onSubmit={handleAssignInventory}

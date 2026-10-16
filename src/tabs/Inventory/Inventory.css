@@ -1,7 +1,7 @@
 .inventory-tab-bar {
   display: flex;
   gap: 0.6375rem;
-  marginBottom: 1.275rem;
+  margin-bottom: 1.275rem;
 }
 
 .inventory-tab-btn {

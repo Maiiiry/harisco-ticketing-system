@@ -24,9 +24,9 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const itUsers = users.filter((u) => u.role === 'it' && u.is_active !== 0);
+  const activeUsers = users.filter((u) => u.is_active !== 0);
 
-  const filteredUsers = itUsers.filter((u) =>
+  const filteredUsers = activeUsers.filter((u) =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -42,7 +42,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
       return;
     }
 
-    const user = itUsers.find((u) => u.id === selectedUserId);
+    const user = activeUsers.find((u) => u.id === selectedUserId);
     if (!user) {
       setErrorMsg('Selected user not found.');
       return;

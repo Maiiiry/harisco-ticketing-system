@@ -2,6 +2,8 @@ import type {
   AdminTicketCategory,
   AdminTicketStatus,
   AppUser,
+  InventoryCategory,
+  InventoryEntity,
   InventoryStatus,
   HSECategory,
   HSEStatus,
@@ -322,4 +324,38 @@ export const INVENTORY_STATUS_OPTIONS = [
     color: '#dc2626',
     bg: 'rgba(220, 38, 38, 0.12)',
   },
+];
+
+// Inventory Category Constants
+export const INVENTORY_CATEGORY_LABELS: Record<InventoryCategory, string> = {
+  Laptop: 'Laptop',
+  Monitor: 'Monitor',
+  Mouse: 'Mouse',
+  Keyboard: 'Keyboard',
+  Printer: 'Printer',
+  Mobile: 'Mobile',
+};
+
+export const INVENTORY_CATEGORY_OPTIONS = [
+  { value: 'Laptop' as InventoryCategory, label: 'Laptop', color: '#0e529b', bg: 'rgba(14, 82, 155, 0.12)' },
+  { value: 'Monitor' as InventoryCategory, label: 'Monitor', color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' },
+  { value: 'Mouse' as InventoryCategory, label: 'Mouse', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.12)' },
+  { value: 'Keyboard' as InventoryCategory, label: 'Keyboard', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
+  { value: 'Printer' as InventoryCategory, label: 'Printer', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)' },
+  { value: 'Mobile' as InventoryCategory, label: 'Mobile', color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
+];
+
+// Inventory Entity Constants
+export const INVENTORY_ENTITY_LABELS: Record<InventoryEntity, string> = {
+  HQ: 'HQ',
+  Factory: 'Factory',
+  External: 'External',
+  Others: 'Others',
+};
+
+export const INVENTORY_ENTITY_OPTIONS = [
+  { value: 'HQ' as InventoryEntity, label: 'HQ', color: '#0e529b', bg: 'rgba(14, 82, 155, 0.12)' },
+  { value: 'Factory' as InventoryEntity, label: 'Factory', color: '#64748b', bg: 'rgba(100, 116, 139, 0.12)' },
+  { value: 'External' as InventoryEntity, label: 'External', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.12)' },
+  { value: 'Others' as InventoryEntity, label: 'Others', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
 ];
