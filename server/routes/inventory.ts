@@ -21,20 +21,19 @@ import logger from '../utils/logger.ts';
 const router = Router();
 
 async function resolveUserAcrossTables(db: ReturnType<typeof getDb>, userId: string) {
-  let u = await db.get<{ id: string; name: string }>(
-    'SELECT id, name FROM users WHERE id = ? AND is_active != 0',
-    [userId],
-  );
+  let u = await db.get<{ id: string; name: string }>('SELECT id, name FROM users WHERE id = ? AND is_active != 0', [
+    userId,
+  ]);
   if (!u) {
     u = await db.get<{ id: string; name: string }>(
       'SELECT id, name FROM factory_users WHERE id = ? AND is_active != 0',
-      [userId],
+      [userId]
     );
   }
   if (!u) {
     u = await db.get<{ id: string; name: string }>(
       'SELECT id, name FROM external_users WHERE id = ? AND is_active != 0',
-      [userId],
+      [userId]
     );
   }
   return u;
@@ -83,16 +82,13 @@ router.post(
       return res.status(400).json({ error: parsed.error.message || 'Invalid inventory data.' });
     }
 
-    const { company, entity, category, details, device_id, sn_mac_address, assigned_user_id, attachment } =
-      parsed.data;
+    const { company, entity, category, details, device_id, sn_mac_address, assigned_user_id, attachment } = parsed.data;
 
     try {
       const db = getDb();
 
       // Uniqueness pre-check
-      const existingDevice = await db.get<{ id: string }>('SELECT id FROM inventory WHERE device_id = ?', [
-        device_id,
-      ]);
+      const existingDevice = await db.get<{ id: string }>('SELECT id FROM inventory WHERE device_id = ?', [device_id]);
       if (existingDevice) {
         return res.status(409).json({ error: 'Device ID already exists.' });
       }
@@ -137,7 +133,7 @@ router.post(
           attachment ?? null,
           timestamp,
           timestamp,
-        ],
+        ]
       );
 
       const response: InventoryResponse = {
@@ -204,7 +200,7 @@ router.put(
 
       await db.run(
         'UPDATE inventory SET status = ?, assigned_user_id = ?, assigned_user_name = ?, updated_at = ? WHERE id = ?',
-        ['Assigned', userId, assignee.name, timestamp, inventoryId],
+        ['Assigned', userId, assignee.name, timestamp, inventoryId]
       );
 
       const response: AssignInventoryResponse = {
@@ -299,7 +295,7 @@ router.patch(
           attachment,
           updated_at,
           inventoryId,
-        ],
+        ]
       );
 
       const updatedItem: InventoryResponse = {
@@ -327,30 +323,26 @@ router.patch(
 );
 
 // DELETE /api/inventory/:id — delete inventory record
-router.delete(
-  '/:id',
-  authenticateToken,
-  async (req: AuthRequest, res: ApiResponse<{ success: boolean }>) => {
-    if (req.user?.role !== 'it') {
-      return res.status(403).json({ error: 'Forbidden. Inventory management requires IT role.' });
-    }
-
-    const inventoryId = String(req.params.id);
-
-    try {
-      const db = getDb();
-      const existing = await db.get<{ id: string }>('SELECT id FROM inventory WHERE id = ?', [inventoryId]);
-      if (!existing) {
-        return res.status(404).json({ error: 'Inventory item not found.' });
-      }
-
-      await db.run('DELETE FROM inventory WHERE id = ?', [inventoryId]);
-      return res.json({ success: true });
-    } catch (error) {
-      logger.error('Failed to delete inventory:', error);
-      return res.status(500).json({ error: 'Failed to delete inventory.' });
-    }
+router.delete('/:id', authenticateToken, async (req: AuthRequest, res: ApiResponse<{ success: boolean }>) => {
+  if (req.user?.role !== 'it') {
+    return res.status(403).json({ error: 'Forbidden. Inventory management requires IT role.' });
   }
-);
+
+  const inventoryId = String(req.params.id);
+
+  try {
+    const db = getDb();
+    const existing = await db.get<{ id: string }>('SELECT id FROM inventory WHERE id = ?', [inventoryId]);
+    if (!existing) {
+      return res.status(404).json({ error: 'Inventory item not found.' });
+    }
+
+    await db.run('DELETE FROM inventory WHERE id = ?', [inventoryId]);
+    return res.json({ success: true });
+  } catch (error) {
+    logger.error('Failed to delete inventory:', error);
+    return res.status(500).json({ error: 'Failed to delete inventory.' });
+  }
+});
 
 export default router;

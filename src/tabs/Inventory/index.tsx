@@ -65,14 +65,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
     onSubTabChange?.(tab);
   };
 
-  const companies = useMemo(
-    () => [...new Set(inventory.map((i) => i.company).filter(Boolean))].sort(),
-    [inventory]
-  );
-  const entities = useMemo(
-    () => [...new Set(inventory.map((i) => i.entity).filter(Boolean))].sort(),
-    [inventory]
-  );
+  const companies = useMemo(() => [...new Set(inventory.map((i) => i.company).filter(Boolean))].sort(), [inventory]);
+  const entities = useMemo(() => [...new Set(inventory.map((i) => i.entity).filter(Boolean))].sort(), [inventory]);
 
   // Accurate counts across the whole inventory
   const allCount = inventory.length;
@@ -115,9 +109,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   const isIT = currentUser.role === 'it';
 
   const getStatusBadge = (status: InventoryStatus) => {
-    const opt = INVENTORY_STATUS_OPTIONS.find(
-      (o) => o.value.toLowerCase() === (status || '').toLowerCase()
-    );
+    const opt = INVENTORY_STATUS_OPTIONS.find((o) => o.value.toLowerCase() === (status || '').toLowerCase());
     return (
       <span
         className="badge"
@@ -132,9 +124,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   };
 
   const getCategoryBadge = (category: string) => {
-    const opt = INVENTORY_CATEGORY_OPTIONS.find(
-      (o) => o.value.toLowerCase() === (category || '').toLowerCase()
-    );
+    const opt = INVENTORY_CATEGORY_OPTIONS.find((o) => o.value.toLowerCase() === (category || '').toLowerCase());
     return (
       <span
         className="badge"
@@ -388,8 +378,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                     {subTab === 'stocked'
                       ? 'No stocked inventory available.'
                       : subTab === 'assigned'
-                      ? 'No assigned inventory.'
-                      : 'No inventory items found.'}
+                        ? 'No assigned inventory.'
+                        : 'No inventory items found.'}
                   </td>
                 </tr>
               )}

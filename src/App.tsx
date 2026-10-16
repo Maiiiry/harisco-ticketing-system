@@ -1562,12 +1562,12 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-              ...u,
-              is_active: 0,
-              offboarded_at: offboardDate,
-              offboarded_by: currentUser.id,
-              offboard_reason: reason,
-            }
+                ...u,
+                is_active: 0,
+                offboarded_at: offboardDate,
+                offboarded_by: currentUser.id,
+                offboard_reason: reason,
+              }
             : u
         )
       );
@@ -1613,16 +1613,16 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-              ...u,
-              name: updatedUser.name,
-              email: updatedUser.email,
-              department: updatedUser.department,
-              designation: updatedUser.designation,
-              avatar: updatedUser.avatar,
-              role: updatedUser.role,
-              isDepartmentHead: updatedUser.isDepartmentHead,
-              loginEnabled: updatedUser.loginEnabled,
-            }
+                ...u,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                department: updatedUser.department,
+                designation: updatedUser.designation,
+                avatar: updatedUser.avatar,
+                role: updatedUser.role,
+                isDepartmentHead: updatedUser.isDepartmentHead,
+                loginEnabled: updatedUser.loginEnabled,
+              }
             : u
         )
       );
@@ -1717,12 +1717,12 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-              ...u,
-              is_active: 0,
-              offboarded_at: offboardDate,
-              offboarded_by: currentUser.id,
-              offboard_reason: reason,
-            }
+                ...u,
+                is_active: 0,
+                offboarded_at: offboardDate,
+                offboarded_by: currentUser.id,
+                offboard_reason: reason,
+              }
             : u
         )
       );
@@ -1767,16 +1767,16 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-              ...u,
-              name: updatedUser.name,
-              email: updatedUser.email,
-              department: updatedUser.department,
-              designation: updatedUser.designation,
-              avatar: updatedUser.avatar,
-              isDepartmentHead: updatedUser.isDepartmentHead,
-              loginEnabled: updatedUser.loginEnabled,
-              defaultShift: updatedUser.defaultShift,
-            }
+                ...u,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                department: updatedUser.department,
+                designation: updatedUser.designation,
+                avatar: updatedUser.avatar,
+                isDepartmentHead: updatedUser.isDepartmentHead,
+                loginEnabled: updatedUser.loginEnabled,
+                defaultShift: updatedUser.defaultShift,
+              }
             : u
         )
       );
@@ -1865,9 +1865,9 @@ function App() {
         prevUsers.map((u) =>
           u.id === userId
             ? {
-              ...u,
-              username: updatedUser.username,
-            }
+                ...u,
+                username: updatedUser.username,
+              }
             : u
         )
       );
@@ -1935,10 +1935,13 @@ function App() {
     }
   };
 
-  const handleUpdateInventory = async (id: string, patch: {
-    status?: InventoryStatus;
-    assigned_user_id?: string | null;
-  }) => {
+  const handleUpdateInventory = async (
+    id: string,
+    patch: {
+      status?: InventoryStatus;
+      assigned_user_id?: string | null;
+    }
+  ) => {
     if (!token || !currentUser) return;
     try {
       const res = await fetch(`/api/inventory/${id}`, {
@@ -1956,9 +1959,7 @@ function App() {
       }
 
       const updatedInventory = await res.json();
-      setInventory((prevInventory) =>
-        prevInventory.map((a) => (a.id === id ? updatedInventory : a))
-      );
+      setInventory((prevInventory) => prevInventory.map((a) => (a.id === id ? updatedInventory : a)));
     } catch (err) {
       console.error(err);
       const errMsg = err instanceof Error ? err.message : 'Error updating inventory. Please try again.';
@@ -1984,9 +1985,7 @@ function App() {
       }
 
       const updatedInventory = await res.json();
-      setInventory((prevInventory) =>
-        prevInventory.map((a) => (a.id === id ? updatedInventory : a))
-      );
+      setInventory((prevInventory) => prevInventory.map((a) => (a.id === id ? updatedInventory : a)));
       setSelectedInventoryIdForAssign(null);
     } catch (err) {
       console.error(err);

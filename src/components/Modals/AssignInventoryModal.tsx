@@ -26,9 +26,10 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
 
   const activeUsers = users.filter((u) => u.is_active !== 0);
 
-  const filteredUsers = activeUsers.filter((u) =>
-    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.username?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = activeUsers.filter(
+    (u) =>
+      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.username?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (!isOpen) return null;

@@ -21,12 +21,7 @@ interface RegisterInventoryModalProps {
   }) => void;
 }
 
-export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
-  isOpen,
-  onClose,
-  users,
-  onSubmit,
-}) => {
+export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ isOpen, onClose, users, onSubmit }) => {
   const [company, setCompany] = useState('');
   const [entity, setEntity] = useState<InventoryEntity | null>(null);
   const [category, setCategory] = useState<InventoryCategory | null>(null);
@@ -227,9 +222,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                 value={assignedUserId ?? ''}
                 onChange={(e) => setAssignedUserId(e.target.value || null)}
               >
-                <option value="">
-                  -- Select User (Optional) --
-                </option>
+                <option value="">-- Select User (Optional) --</option>
                 {activeUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name} ({formatEmployeeCode(u.username || u.id)})
@@ -302,7 +295,14 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                 onChange={handleAttachmentChange}
               />
               {attachmentFileName && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.425rem', display: 'block' }}>
+                <span
+                  style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--text-secondary)',
+                    marginTop: '0.425rem',
+                    display: 'block',
+                  }}
+                >
                   {attachmentFileName}
                 </span>
               )}
