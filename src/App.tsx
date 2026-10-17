@@ -49,6 +49,7 @@ import { LeaveManagement } from './tabs/LeaveManagement';
 import { Login } from './tabs/Login';
 import { NoticeBoard } from './tabs/Noticeboard';
 import { SiteDutyManagement } from './tabs/SiteDutyManagement';
+import { generateDeviceId, isValidDeviceId } from './utils';
 
 function canUserAccessTab(
   tab: ActiveTab,
@@ -1890,49 +1891,55 @@ function App() {
     attachment: string | null;
   }) => {
     if (!token || !currentUser) return;
-    try {
-      const payload: Record<string, unknown> = {
-        company: data.company,
-        entity: data.entity,
-        category: data.category,
-        details: data.details,
-        device_id: data.device_id,
-        sn_mac_address: data.sn_mac_address,
-        assigned_user_id: data.assigned_user_id,
-        attachment: data.attachment,
-      };
-
-      const res = await fetch('/api/inventory', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to register inventory');
-      }
-
-      const newInventory = await res.json();
-      setInventory((prevInventory) => [newInventory, ...prevInventory]);
-      setIsRegisterInventoryModalOpen(false);
-
-      if (newInventory.status === 'Assigned') {
-        setInvSubTab('assigned');
-      } else {
-        setInvSubTab('stocked');
-      }
-      setInvSearchQuery('');
-      setInvCompanyFilter('all');
-      setInvEntityFilter('all');
-    } catch (err) {
-      console.error(err);
-      const errMsg = err instanceof Error ? err.message : 'Error registering inventory. Please try again.';
-      alert(errMsg);
+    // Enforce device ID format server-side: HC-Entity-Manufacturer-Category-0001
+    // Sequence recalculated from current inventory matching entity + manufacturer + category.
+    const generatedDeviceId = generateDeviceId({
+      entity: data.entity,
+      manufacturer: data.company,
+      category: data.category,
+      inventory,
+    });
+    if (!isValidDeviceId(generatedDeviceId)) {
+      throw new Error('Generated device ID is invalid.');
     }
+
+    const payload: Record<string, unknown> = {
+      company: data.company,
+      entity: data.entity,
+      category: data.category,
+      details: data.details,
+      device_id: generatedDeviceId,
+      sn_mac_address: data.sn_mac_address,
+      assigned_user_id: data.assigned_user_id,
+      attachment: data.attachment,
+    };
+
+    const res = await fetch('/api/inventory', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Failed to register inventory');
+    }
+
+    const newInventory = await res.json();
+    setInventory((prevInventory) => [newInventory, ...prevInventory]);
+    setIsRegisterInventoryModalOpen(false);
+
+    if (newInventory.status === 'Assigned') {
+      setInvSubTab('assigned');
+    } else {
+      setInvSubTab('stocked');
+    }
+    setInvSearchQuery('');
+    setInvCompanyFilter('all');
+    setInvEntityFilter('all');
   };
 
   const handleUpdateInventory = async (
@@ -1967,31 +1974,26 @@ function App() {
     }
   };
 
-  const handleAssignInventory = async (id: string, userId: string) => {
+  const handleAssignInventory = async (id: string, entity: InventoryEntity, userId: string | null, deviceId: string) => {
     if (!token || !currentUser) return;
-    try {
-      const res = await fetch(`/api/inventory/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: 'Assigned', assigned_user_id: userId }),
-      });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to assign inventory');
-      }
+    const res = await fetch(`/api/inventory/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status: 'Assigned', assigned_user_id: userId, entity, device_id: deviceId }),
+    });
 
-      const updatedInventory = await res.json();
-      setInventory((prevInventory) => prevInventory.map((a) => (a.id === id ? updatedInventory : a)));
-      setSelectedInventoryIdForAssign(null);
-    } catch (err) {
-      console.error(err);
-      const errMsg = err instanceof Error ? err.message : 'Error assigning inventory. Please try again.';
-      alert(errMsg);
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Failed to assign inventory');
     }
+
+    const updatedInventory = await res.json();
+    setInventory((prevInventory) => prevInventory.map((a) => (a.id === id ? updatedInventory : a)));
+    setSelectedInventoryIdForAssign(null);
   };
 
   const handleDeleteInventory = async (id: string) => {
@@ -2284,6 +2286,7 @@ function App() {
           isOpen={isRegisterInventoryModalOpen}
           onClose={() => setIsRegisterInventoryModalOpen(false)}
           users={allAssignableUsers}
+          inventory={inventory}
           onSubmit={handleCreateInventory}
         />
       )}

@@ -1,8 +1,9 @@
-import { Search, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import React, { useState } from 'react';
 
-import type { AppUser } from '../../types';
+import type { AppUser, InventoryEntity } from '../../types';
 
+import { INVENTORY_ENTITY_OPTIONS } from '../../constants';
 import { formatEmployeeCode } from '../../utils';
 
 interface AssignInventoryModalProps {
@@ -10,7 +11,7 @@ interface AssignInventoryModalProps {
   users: AppUser[];
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (inventoryId: string, userId: string) => void;
+  onSubmit: (inventoryId: string, entity: InventoryEntity, userId: string | null, deviceId: string) => void;
 }
 
 export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
@@ -20,39 +21,53 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [entity, setEntity] = useState<InventoryEntity | null>(null);
+  const [assignedUserId, setAssignedUserId] = useState<string | null>(null);
+  const [assigneeOpen, setAssigneeOpen] = useState(false);
+  const [assigneeInput, setAssigneeInput] = useState('');
+  const [deviceId, setDeviceId] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const activeUsers = users.filter((u) => u.is_active !== 0);
+  const hqRoles = ['it', 'employee', 'manager', 'executive'];
+  const factoryRoles = ['factory_employee', 'factory_it', 'factory_manager'];
+  const externalRoles = ['external'];
+  const entityRoleMap: Record<InventoryEntity, string[]> = {
+    HQ: hqRoles,
+    Factory: factoryRoles,
+    External: externalRoles,
+    Others: [],
+  };
 
-  const filteredUsers = activeUsers.filter(
-    (u) =>
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.username?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAssignees = activeUsers.filter((u) => {
+    const allowedRoles = entity ? entityRoleMap[entity] : [];
+    if (allowedRoles.length > 0 && !allowedRoles.includes(u.role)) return false;
+    const term = assigneeInput.toLowerCase();
+    return u.name.toLowerCase().includes(term) || (u.username || '').toLowerCase().includes(term);
+  });
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!selectedUserId) {
-      setErrorMsg('Please select a user to assign this inventory to.');
+    if (!entity) {
+      setErrorMsg('Entity is required.');
       return;
     }
 
-    const user = activeUsers.find((u) => u.id === selectedUserId);
-    if (!user) {
-      setErrorMsg('Selected user not found.');
+    if (!deviceId.trim()) {
+      setErrorMsg('Device ID is required.');
       return;
     }
 
     setErrorMsg(null);
-    onSubmit(inventoryId, selectedUserId);
-    setSelectedUserId('');
-    setSearchQuery('');
+    await onSubmit(inventoryId, entity, assignedUserId, deviceId.trim());
+    setEntity(null);
+    setAssignedUserId(null);
+    setAssigneeInput('');
+    setDeviceId('');
     onClose();
   };
 
@@ -94,58 +109,123 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
               </div>
             )}
 
-            <div className="form-group">
-              <label htmlFor="assign-inventory-user-search" className="form-label">
-                Search IT User
-              </label>
-              <div style={{ position: 'relative', width: '100%' }}>
-                <Search
-                  size={16}
-                  style={{
-                    position: 'absolute',
-                    left: '0.6375rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--text-muted)',
-                  }}
-                />
-                <input
-                  id="assign-inventory-user-search"
-                  type="text"
-                  className="form-input"
-                  placeholder="Search by name or employee code..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ width: '100%', paddingLeft: '36px', height: '38px', backgroundColor: 'var(--bg-primary)' }}
-                />
-              </div>
-            </div>
+            <div style={{ marginTop: '1rem', borderTop: '0.0531rem solid var(--border-color)', paddingTop: '0.85rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                <div className="form-group">
+                  <label htmlFor="assign-inventory-entity-select" className="form-label">
+                    Entity
+                  </label>
+                  <select
+                    id="assign-inventory-entity-select"
+                    className="form-input"
+                    style={{ backgroundColor: 'var(--bg-primary)' }}
+                    value={entity ?? ''}
+                    onChange={(e) => {
+                      setEntity(e.target.value as InventoryEntity);
+                      setAssignedUserId(null);
+                      setAssigneeInput('');
+                    }}
+                    required
+                  >
+                    <option value="" selected disabled>
+                      -- Select Entity --
+                    </option>
+                    {INVENTORY_ENTITY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="form-group">
-              <label htmlFor="assign-inventory-user-select" className="form-label">
-                Select User
-              </label>
-              <select
-                id="assign-inventory-user-select"
-                className="form-input"
-                style={{ backgroundColor: 'var(--bg-primary)' }}
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-              >
-                <option value="" selected disabled>
-                  -- Select a User --
-                </option>
-                {filteredUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} ({formatEmployeeCode(u.username || u.id)})
-                  </option>
-                ))}
-              </select>
-              {filteredUsers.length === 0 && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                  No matching IT users found.
-                </span>
-              )}
+                <div className="form-group">
+                  <label htmlFor="assign-inventory-assignee-select" className="form-label">
+                    Assignee (Optional)
+                  </label>
+                  <div
+                    id="assign-inventory-assignee-select"
+                    style={{
+                      position: 'relative',
+                      display: 'inline-block',
+                      width: '100%',
+                    }}
+                  >
+                    <input
+                      id="assign-inventory-assignee-input"
+                      type="text"
+                      className="form-input"
+                      style={{ backgroundColor: 'var(--bg-primary)' }}
+                      disabled={!entity}
+                      value={assignedUserId ? assigneeInput : ''}
+                      placeholder="-- Select User (Optional) --"
+                      onChange={(e) => {
+                        setAssigneeInput(e.target.value);
+                        setAssigneeOpen(true);
+                      }}
+                      onFocus={() => setAssigneeOpen(true)}
+                      onBlur={() => setTimeout(() => setAssigneeOpen(false), 150)}
+                    />
+                    {assigneeOpen && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          backgroundColor: 'var(--bg-primary)',
+                          border: '0.0531rem solid var(--border-color)',
+                          borderRadius: 'var(--radius-md)',
+                          zIndex: 50,
+                          maxHeight: '12rem',
+                          overflowY: 'auto',
+                          boxShadow: '0 0.2656rem 0.5313rem rgba(0, 0, 0, 0.1)',
+                        }}
+                      >
+                        {filteredAssignees.length === 0 ? (
+                          <div style={{ padding: '0.5313rem 0.7438rem', fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            No matching users available.
+                          </div>
+                        ) : (
+                          filteredAssignees.map((u) => (
+                            <div
+                              key={u.id}
+                              onClick={() => {
+                                setAssignedUserId(u.id);
+                                setAssigneeInput(`${u.name} (${formatEmployeeCode(u.username || u.id)})`);
+                                setAssigneeOpen(false);
+                              }}
+                              style={{
+                                padding: '0.5313rem 0.7438rem',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                borderBottom: '0.0531rem solid var(--border-color)',
+                                backgroundColor: assignedUserId === u.id ? 'rgba(14, 82, 155, 0.1)' : 'transparent',
+                              }}
+                            >
+                              {u.name} ({formatEmployeeCode(u.username || u.id)})
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <label htmlFor="assign-inventory-device-id-input" className="form-label">
+                    Device ID
+                  </label>
+                  <input
+                    id="assign-inventory-device-id-input"
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. HC-HQ-Dell-Lap-0001"
+                    value={deviceId}
+                    onChange={(e) => setDeviceId(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -165,7 +245,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
               id="btn-assign-inventory-submit"
               type="submit"
               className="btn btn-primary"
-              disabled={!selectedUserId}
+              disabled={!entity || !deviceId.trim()}
             >
               Assign Inventory
             </button>
