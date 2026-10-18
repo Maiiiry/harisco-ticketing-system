@@ -7,4 +7,11 @@
 .inventory-tab-btn {
   padding: 0.5313rem 1.0625rem;
   font-size: 0.85rem;
+  border: 0.0531rem solid var(--border-color);
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.inventory-tab-btn.btn-primary {
+  border-color: var(--color-primary);
 }

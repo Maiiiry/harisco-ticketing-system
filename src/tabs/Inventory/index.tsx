@@ -287,8 +287,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
       </span>
 
       {/* Inventory List Table */}
-      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="table-wrapper">
+      <div className="panel" style={{ padding: 0, overflow: 'hidden', minHeight: '24rem' }}>
+        <div className="table-wrapper" style={{ overflowY: 'scroll' }}>
           <table className="data-table">
             <thead>
               <tr>
