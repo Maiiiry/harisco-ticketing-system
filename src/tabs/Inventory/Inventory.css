@@ -15,3 +15,16 @@
 .inventory-tab-btn.btn-primary {
   border-color: var(--color-primary);
 }
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.actions-cell button {
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}

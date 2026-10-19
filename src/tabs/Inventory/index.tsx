@@ -1,4 +1,4 @@
-import { Filter, HardDrive, Layers, Search, Trash2, UserCheck, UserPlus } from 'lucide-react';
+import { CircleCheckBig, Filter, HardDrive, Layers, Search, Trash, UserCheck, UserPlus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import type { AppUser, Inventory, InventoryStatus } from '../../types';
@@ -23,6 +23,7 @@ interface InventoryTabProps {
   onAssignOpen: (inventoryId: string) => void;
   onUpdateInventory: (id: string, patch: { status?: InventoryStatus; assigned_user_id?: string | null }) => void;
   onDeleteInventory: (id: string) => void;
+  onRowClick?: (inventory: Inventory) => void;
   loading?: boolean;
 }
 
@@ -51,6 +52,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   onAssignOpen,
   onUpdateInventory,
   onDeleteInventory,
+  onRowClick,
   loading = false,
 }) => {
   const [internalSubTab, setInternalSubTab] = useState<'all' | 'stocked' | 'assigned'>('all');
@@ -106,7 +108,9 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [inventory, subTab, searchQuery, companyFilter, entityFilter]);
 
-  const isIT = currentUser.role === 'it';
+  const isIT = currentUser.role === 'it' || currentUser.role === 'factory_it';
+  const userMap = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
+
 
   const getStatusBadge = (status: InventoryStatus) => {
     const opt = INVENTORY_STATUS_OPTIONS.find((o) => o.value.toLowerCase() === (status || '').toLowerCase());
@@ -139,10 +143,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
     );
   };
 
-  const getAssignedUserName = (assignedUserId: string | null, assignedUserName?: string | null) => {
+  const getAssignedUserName = (assignedUserId: string | null, assignedUserName?: string | null, userMapLocal?: Map<string, AppUser>) => {
     if (assignedUserName) return assignedUserName;
     if (!assignedUserId) return null;
-    const user = users.find((u) => u.id === assignedUserId);
+    const user = userMapLocal ? userMapLocal.get(assignedUserId) : users.find((u) => u.id === assignedUserId);
     return user ? user.name : assignedUserId;
   };
 
@@ -308,8 +312,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <LoadingSpinner type="table" rows={6} />
               ) : (
                 filteredInventory.map((item) => (
-                  <tr key={item.id}>
-                    <td style={{ fontWeight: 'bold', width: '9rem' }}>{item.device_id}</td>
+                  <tr key={item.id} onClick={() => onRowClick?.(item)} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
+                    <td style={{ fontWeight: 'bold', width: '9rem', whiteSpace: 'nowrap' }}>{item.device_id}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.sn_mac_address}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.company}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.entity}</td>
@@ -319,7 +323,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                     <td style={{ fontSize: '0.85rem' }}>
                       {item.assigned_user_id || item.assigned_user_name ? (
                         <span style={{ color: 'var(--text-primary)' }}>
-                          {getAssignedUserName(item.assigned_user_id, item.assigned_user_name)}
+                          {getAssignedUserName(item.assigned_user_id, item.assigned_user_name, userMap)}
                         </span>
                       ) : (
                         <span
@@ -332,33 +336,35 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                         </span>
                       )}
                     </td>
-                    <td style={{ display: 'flex', flexDirection: 'column', gap: '0.425rem' }}>
+                    <td className="actions-cell" style={{ verticalAlign: 'middle' }}>
                       {(item.status === 'Stocked' || !item.assigned_user_id) && isIT && (
                         <button
                           className="btn btn-secondary"
-                          style={{ width: '100%', padding: '0.3188rem 0.5313rem', fontSize: '0.75rem' }}
-                          onClick={() => onAssignOpen(item.id)}
+                          style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
+                          aria-label="Assign inventory"
+                          onClick={(e) => { e.stopPropagation(); onAssignOpen(item.id); }}
                         >
-                          Assign
+                          <UserPlus size={14} />
                         </button>
                       )}
                       {item.status === 'Assigned' && isIT && (
                         <button
                           className="btn btn-secondary"
-                          style={{ width: '100%', padding: '0.3188rem 0.5313rem', fontSize: '0.75rem' }}
-                          onClick={() => onUpdateInventory(item.id, { status: 'Stocked', assigned_user_id: null })}
+                          style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
+                          aria-label="Un-assign inventory"
+                          onClick={(e) => { e.stopPropagation(); onUpdateInventory(item.id, { status: 'Stocked', assigned_user_id: null }); }}
                         >
-                          Un-assign
+                          <CircleCheckBig size={14} />
                         </button>
                       )}
                       {isIT && (
                         <button
                           className="btn btn-danger"
-                          style={{ width: '100%', padding: '0.3188rem 0.5313rem', fontSize: '0.75rem' }}
-                          onClick={() => onDeleteInventory(item.id)}
+                          style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
+                          aria-label="Delete inventory"
+                          onClick={(e) => { e.stopPropagation(); onDeleteInventory(item.id); }}
                         >
-                          <Trash2 size={12} />
-                          Delete
+                          <Trash size={14} />
                         </button>
                       )}
                     </td>

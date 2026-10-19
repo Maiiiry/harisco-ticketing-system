@@ -32,6 +32,7 @@ import { AssignInventoryModal } from './components/Modals/AssignInventoryModal';
 import { ChangePasswordModal } from './components/Modals/ChangePasswordModal';
 import { CreateNoticeModal } from './components/Modals/CreateNoticeModal';
 import { EditNoticeModal } from './components/Modals/EditNoticeModal';
+import { InventoryDetailsModal } from './components/Modals/InventoryDetailsModal';
 import { NewAdminTicketModal } from './components/Modals/NewAdminTicketModal';
 import { NewHSETicketModal } from './components/Modals/NewHSETicketModal';
 import { NewTicketModal } from './components/Modals/NewTicketModal';
@@ -222,6 +223,7 @@ function App() {
   // Inventory Tracking state
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [isRegisterInventoryModalOpen, setIsRegisterInventoryModalOpen] = useState<boolean>(false);
+const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
   const [selectedInventoryIdForAssign, setSelectedInventoryIdForAssign] = useState<string | null>(null);
   const [invSubTab, setInvSubTab] = useState<'all' | 'stocked' | 'assigned'>('all');
   const [invSearchQuery, setInvSearchQuery] = useState<string>('');
@@ -2020,6 +2022,10 @@ function App() {
     }
   };
 
+  const handleViewInventoryDetails = (inventoryItem: Inventory) => {
+    setSelectedInventory(inventoryItem);
+  };
+
   // Loading state skeleton screen
   if (loading) {
     return (
@@ -2148,6 +2154,7 @@ function App() {
               onAssignOpen={(id) => setSelectedInventoryIdForAssign(id)}
               onUpdateInventory={handleUpdateInventory}
               onDeleteInventory={handleDeleteInventory}
+              onRowClick={handleViewInventoryDetails}
               loading={loading}
             />
           ) : activeTab === 'attendance' ? (
@@ -2301,6 +2308,14 @@ function App() {
           onSubmit={handleAssignInventory}
         />
       )}
+
+      {/* Inventory Details Modal */}
+      <InventoryDetailsModal
+        isOpen={selectedInventory !== null}
+        onClose={() => setSelectedInventory(null)}
+        inventory={selectedInventory}
+        users={allAssignableUsers}
+      />
     </div>
   );
 }
