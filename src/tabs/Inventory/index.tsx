@@ -318,7 +318,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                     <td style={{ fontSize: '0.85rem' }}>{item.company}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.entity}</td>
                     <td>{getCategoryBadge(item.category)}</td>
-                    <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{item.details}</td>
+                    <td className="leave-reason" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{item.details}</td>
                     <td>{getStatusBadge(item.status)}</td>
                     <td style={{ fontSize: '0.85rem' }}>
                       {item.assigned_user_id || item.assigned_user_name ? (
