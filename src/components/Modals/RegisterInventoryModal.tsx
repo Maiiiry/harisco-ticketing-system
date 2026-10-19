@@ -146,17 +146,13 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div
-          className="panel-header"
-          style={{ padding: '1.0625rem 1.275rem', borderBottom: '0.0531rem solid var(--border-color)', margin: 0 }}
-        >
-          <h2 className="panel-title" style={{ fontSize: '1.15rem' }}>
+        <div className="panel-header inv-modal-header">
+          <h2 className="panel-title inv-modal-title">
             Register New Inventory
           </h2>
           <button
             id="btn-register-inventory-modal-close"
-            className="btn btn-secondary"
-            style={{ width: '1.7rem', height: '1.7rem', padding: 0, borderRadius: '50%' }}
+            className="btn btn-secondary inv-modal-close-btn"
             onClick={onClose}
           >
             <X size={16} />
@@ -164,24 +160,14 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ padding: '1.275rem' }}>
+          <div className="inv-modal-body">
             {errorMsg && (
-              <div
-                style={{
-                  backgroundColor: 'rgba(244, 63, 94, 0.15)',
-                  border: '0.0531rem solid rgba(244, 63, 94, 0.3)',
-                  color: '#f43f5e',
-                  padding: '0.5313rem 0.7438rem',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: '0.85rem',
-                  fontSize: '0.85rem',
-                }}
-              >
+              <div className="inv-error-msg">
                 {errorMsg}
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+            <div className="inv-form-grid">
               <div className="form-group">
                 <label htmlFor="inventory-sn-mac-input" className="form-label">
                   SN / MAC Address
@@ -203,8 +189,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                 </label>
                 <select
                   id="inventory-category-select"
-                  className="form-input"
-                  style={{ backgroundColor: 'var(--bg-primary)' }}
+                  className="form-input inv-select-primary-bg"
                   value={category ?? ''}
                   onChange={(e) => setCategory(e.target.value as InventoryCategory)}
                   required
@@ -220,7 +205,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                 </select>
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group inv-span-2">
                 <label htmlFor="inventory-company-input" className="form-label">
                   Manufacturter
                 </label>
@@ -234,7 +219,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                 />
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group inv-span-2">
                 <label htmlFor="inventory-details-input" className="form-label">
                   Details
                 </label>
@@ -249,7 +234,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                 />
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group inv-span-2">
                 <label htmlFor="inventory-attachment-input" className="form-label">
                   Attachment (Optional)
                 </label>
@@ -261,14 +246,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                   onChange={handleAttachmentChange}
                 />
                 {attachmentFileName && (
-                  <span
-                    style={{
-                      fontSize: '0.8rem',
-                      color: 'var(--text-secondary)',
-                      marginTop: '0.425rem',
-                      display: 'block',
-                    }}
-                  >
+                  <span className="inv-attachment-filename">
                     {attachmentFileName}
                   </span>
                 )}
@@ -276,21 +254,16 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
             </div>
 
             <div
-              style={{
-                marginTop: '1rem',
-                borderTop: '0.0531rem solid var(--border-color)',
-                paddingTop: '0.85rem',
-              }}
+              className="inv-date-row"
             >
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+              <div className="inv-form-grid">
                 <div className="form-group">
                   <label htmlFor="inventory-entity-select" className="form-label">
                     Entity
                   </label>
                   <select
                     id="inventory-entity-select"
-                    className="form-input"
-                    style={{ backgroundColor: 'var(--bg-primary)' }}
+                    className="form-input inv-select-primary-bg"
                     value={entity ?? ''}
                     onChange={(e) => {
                       setEntity(e.target.value as InventoryEntity);
@@ -316,11 +289,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                   </label>
                   <div
                     id="inventory-assignee-select"
-                    style={{
-                      position: 'relative',
-                      display: 'inline-block',
-                      width: '100%',
-                    }}
+                    className="inv-assignee-wrap"
                   >
                     <input
                       id="inventory-assignee-input"
@@ -338,40 +307,20 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                       onBlur={() => setTimeout(() => setAssigneeOpen(false), 150)}
                     />
                     {assigneeOpen && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '100%',
-                          left: 0,
-                          right: 0,
-                          backgroundColor: 'var(--bg-primary)',
-                          border: '0.0531rem solid var(--border-color)',
-                          borderRadius: 'var(--radius-md)',
-                          zIndex: 50,
-                          maxHeight: '12rem',
-                          overflowY: 'auto',
-                          boxShadow: '0 0.2656rem 0.5313rem rgba(0, 0, 0, 0.1)',
-                        }}
-                      >
+                      <div className="inv-assignee-dropdown">
                         {filteredAssignees.length === 0 ? (
-                          <div style={{ padding: '0.5313rem 0.7438rem', fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                          <div className="inv-assignee-empty">
                             No matching users available.
                           </div>
                         ) : (
                           filteredAssignees.map((u) => (
                             <div
                               key={u.id}
+                              className={`inv-assignee-item ${assignedUserId === u.id ? 'inv-assignee-item-active' : ''}`}
                               onClick={() => {
                                 setAssignedUserId(u.id);
                                 setAssigneeInput(`${u.name} (${formatEmployeeCode(u.username || u.id)})`);
                                 setAssigneeOpen(false);
-                              }}
-                              style={{
-                                padding: '0.5313rem 0.7438rem',
-                                fontSize: '0.85rem',
-                                cursor: 'pointer',
-                                borderBottom: '0.0531rem solid var(--border-color)',
-                                backgroundColor: assignedUserId === u.id ? 'rgba(14, 82, 155, 0.1)' : 'transparent',
                               }}
                             >
                               {u.name} ({formatEmployeeCode(u.username || u.id)})
@@ -383,7 +332,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                   </div>
                 </div>
 
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <div className="form-group inv-span-2">
                   <label htmlFor="inventory-device-id-input" className="form-label">
                     Device ID
                   </label>
@@ -402,15 +351,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
 
           </div>
 
-          <div
-            style={{
-              padding: '0.85rem 1.275rem',
-              borderTop: '0.0531rem solid var(--border-color)',
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.6375rem',
-            }}
-          >
+          <div className="inv-modal-footer">
             <button id="btn-register-inventory-cancel" type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>

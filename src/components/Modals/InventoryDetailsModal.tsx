@@ -60,16 +60,7 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
   };
 
   const readonlyBox = (children: React.ReactNode, extra?: React.CSSProperties) => (
-    <div
-      className="form-input readonly"
-      style={{
-        background: 'var(--bg-tertiary)',
-        padding: '0.5rem 0.75rem',
-        borderRadius: 'var(--radius-md)',
-        border: '0.0531rem solid var(--border-color)',
-        ...extra,
-      }}
-    >
+    <div className="inv-readonly-box" style={extra}>
       {children}
     </div>
   );
@@ -77,17 +68,13 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" style={{ width: '36rem', maxWidth: '95vw' }} onClick={(e) => e.stopPropagation()}>
-        <div
-          className="panel-header"
-          style={{ padding: '1.0625rem 1.275rem', borderBottom: '0.0531rem solid var(--border-color)', margin: 0 }}
-        >
-          <h2 className="panel-title" style={{ fontSize: '1.15rem' }}>
+        <div className="panel-header inv-modal-header">
+          <h2 className="panel-title inv-modal-title">
             Inventory Details
           </h2>
           <button
             id="btn-inventory-details-modal-close"
-            className="btn btn-secondary"
-            style={{ width: '1.7rem', height: '1.7rem', padding: 0, borderRadius: '50%' }}
+            className="btn btn-secondary inv-modal-close-btn"
             onClick={onClose}
             aria-label="Close inventory details"
           >
@@ -95,8 +82,8 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
           </button>
         </div>
 
-        <div style={{ padding: '1.275rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+        <div className="inv-modal-body">
+          <div className="inv-form-grid">
             <div className="form-group">
               <label className="form-label">Device ID</label>
               {readonlyBox(inventory.device_id || '—', { fontFamily: 'monospace', fontSize: '0.875rem' })}
@@ -124,40 +111,29 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
               {readonlyBox(inventory.status || '—')}
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group inv-span-2">
               <label className="form-label">Assigned User</label>
               {readonlyBox(assignedUser ? `${assignedUser.name} (${assignedUser.username})` : 'Unassigned')}
             </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group inv-span-2">
               <label className="form-label">Details</label>
-              <div
-                className="form-textarea readonly"
-                style={{
-                  background: 'var(--bg-tertiary)',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: '0.0531rem solid var(--border-color)',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  minHeight: '5.3125rem',
-                }}
-              >
+              <div className="inv-details-textarea">
                 {inventory.details || '—'}
               </div>
             </div>
 
             {attachmentUrl && (
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group inv-span-2">
                 <label className="form-label">Attachment</label>
                 {canPreview ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div className="inv-attachment-preview">
                     <img
                       src={attachmentUrl}
                       alt={attachmentName}
-                      style={{ maxWidth: '100%', maxHeight: '16rem', borderRadius: 'var(--radius-md)', border: '0.0531rem solid var(--border-color)', objectFit: 'contain', background: 'var(--bg-primary)' }}
+                      className="inv-attachment-img"
                     />
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={handleDownload} style={{ alignSelf: 'flex-start' }}>
+                    <button type="button" className="btn btn-secondary btn-sm inv-download-btn" onClick={handleDownload}>
                       <Download size={14} style={{ marginRight: '0.25rem' }} />
                       Download ({attachmentName})
                     </button>
@@ -172,16 +148,7 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
             )}
           </div>
 
-          <div
-            style={{
-              marginTop: '1rem',
-              borderTop: '0.0531rem solid var(--border-color)',
-              paddingTop: '0.85rem',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '0.75rem',
-            }}
-          >
+          <div className="inv-date-row">
             <div className="form-group">
               <label className="form-label">Created At</label>
               {readonlyBox(formatDate(inventory.created_at), { fontSize: '0.875rem' })}
@@ -193,15 +160,7 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
           </div>
         </div>
 
-        <div
-          style={{
-            padding: '0.85rem 1.275rem',
-            borderTop: '0.0531rem solid var(--border-color)',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '0.6375rem',
-          }}
-        >
+        <div className="inv-modal-footer">
           <button id="btn-inventory-details-close" type="button" className="btn btn-secondary" onClick={onClose}>
             Close
           </button>

@@ -286,13 +286,13 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
       </div>
 
       {/* showing inventory count */}
-      <span className="stat-desc" style={{ textAlign: 'right' }}>
+      <span className="stat-desc inventory-stat-desc">
         Showing {filteredInventory.length} of {inventory.length} inventory
       </span>
 
       {/* Inventory List Table */}
       <div className="panel" style={{ padding: 0, overflow: 'hidden', minHeight: '24rem' }}>
-        <div className="table-wrapper" style={{ overflowY: 'scroll' }}>
+        <div className="table-wrapper inventory-table-wrapper">
           <table className="data-table">
             <thead>
               <tr>
@@ -313,7 +313,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               ) : (
                 filteredInventory.map((item) => (
                   <tr key={item.id} onClick={() => onRowClick?.(item)} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
-                    <td style={{ fontWeight: 'bold', width: '9rem', whiteSpace: 'nowrap' }}>{item.device_id}</td>
+                    <td className="inventory-device-id">{item.device_id}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.sn_mac_address}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.company}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.entity}</td>
