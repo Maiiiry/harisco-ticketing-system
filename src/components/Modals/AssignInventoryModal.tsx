@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import React, { useState } from 'react';
 
-import type { AppUser, Inventory, InventoryEntity } from '../../types';
+import type { AppUser, Inventory, InventoryCategory, InventoryEntity } from '../../types';
 
 import { INVENTORY_ENTITY_OPTIONS } from '../../constants';
 import { formatEmployeeCode, generateDeviceId } from '../../utils';
