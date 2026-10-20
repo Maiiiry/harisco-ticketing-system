@@ -109,8 +109,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   }, [inventory, subTab, searchQuery, companyFilter, entityFilter]);
 
   const isIT = currentUser.role === 'it' || currentUser.role === 'factory_it';
-  const userMap = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
-
+  const userMap = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
 
   const getStatusBadge = (status: InventoryStatus) => {
     const opt = INVENTORY_STATUS_OPTIONS.find((o) => o.value.toLowerCase() === (status || '').toLowerCase());
@@ -143,7 +142,11 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
     );
   };
 
-  const getAssignedUserName = (assignedUserId: string | null, assignedUserName?: string | null, userMapLocal?: Map<string, AppUser>) => {
+  const getAssignedUserName = (
+    assignedUserId: string | null,
+    assignedUserName?: string | null,
+    userMapLocal?: Map<string, AppUser>
+  ) => {
     if (assignedUserName) return assignedUserName;
     if (!assignedUserId) return null;
     const user = userMapLocal ? userMapLocal.get(assignedUserId) : users.find((u) => u.id === assignedUserId);
@@ -312,13 +315,19 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <LoadingSpinner type="table" rows={6} />
               ) : (
                 filteredInventory.map((item) => (
-                  <tr key={item.id} onClick={() => onRowClick?.(item)} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
+                  <tr
+                    key={item.id}
+                    onClick={() => onRowClick?.(item)}
+                    style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                  >
                     <td className="inventory-device-id">{item.device_id}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.sn_mac_address}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.company}</td>
                     <td style={{ fontSize: '0.85rem' }}>{item.entity}</td>
                     <td>{getCategoryBadge(item.category)}</td>
-                    <td className="leave-reason" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{item.details}</td>
+                    <td className="leave-reason" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      {item.details}
+                    </td>
                     <td>{getStatusBadge(item.status)}</td>
                     <td style={{ fontSize: '0.85rem' }}>
                       {item.assigned_user_id || item.assigned_user_name ? (
@@ -342,7 +351,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                           className="btn btn-secondary"
                           style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
                           aria-label="Assign inventory"
-                          onClick={(e) => { e.stopPropagation(); onAssignOpen(item.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAssignOpen(item.id);
+                          }}
                         >
                           <UserPlus size={14} />
                         </button>
@@ -352,7 +364,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                           className="btn btn-secondary"
                           style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
                           aria-label="Un-assign inventory"
-                          onClick={(e) => { e.stopPropagation(); onUpdateInventory(item.id, { status: 'Stocked', assigned_user_id: null }); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdateInventory(item.id, { status: 'Stocked', assigned_user_id: null });
+                          }}
                         >
                           <CircleCheckBig size={14} />
                         </button>
@@ -362,7 +377,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                           className="btn btn-danger"
                           style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
                           aria-label="Delete inventory"
-                          onClick={(e) => { e.stopPropagation(); onDeleteInventory(item.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteInventory(item.id);
+                          }}
                         >
                           <Trash size={14} />
                         </button>

@@ -223,7 +223,7 @@ function App() {
   // Inventory Tracking state
   const [inventory, setInventory] = useState<Inventory[]>([]);
   const [isRegisterInventoryModalOpen, setIsRegisterInventoryModalOpen] = useState<boolean>(false);
-const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
+  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
   const [selectedInventoryIdForAssign, setSelectedInventoryIdForAssign] = useState<string | null>(null);
   const [invSubTab, setInvSubTab] = useState<'all' | 'stocked' | 'assigned'>('all');
   const [invSearchQuery, setInvSearchQuery] = useState<string>('');
@@ -1976,7 +1976,12 @@ const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(nul
     }
   };
 
-  const handleAssignInventory = async (id: string, entity: InventoryEntity, userId: string | null, deviceId: string) => {
+  const handleAssignInventory = async (
+    id: string,
+    entity: InventoryEntity,
+    userId: string | null,
+    deviceId: string
+  ) => {
     if (!token || !currentUser) return;
 
     const res = await fetch(`/api/inventory/${id}`, {

@@ -32,7 +32,7 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
 
   if (!isOpen || !inventory) return null;
 
-  const assignedUser = inventory.assigned_user_id ? users.find(u => u.id === inventory.assigned_user_id) : null;
+  const assignedUser = inventory.assigned_user_id ? users.find((u) => u.id === inventory.assigned_user_id) : null;
 
   const isDataUrl = (val?: string | null) => !!val && val.startsWith('data:');
 
@@ -112,8 +112,12 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
                 <strong style={{ fontSize: '0.85rem' }}>{inventory.device_id || '—'}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>SN/MAC Address</span>
-                <strong style={{ fontSize: '0.85rem', wordBreak: 'break-all' }}>{inventory.sn_mac_address || '—'}</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>
+                  SN/MAC Address
+                </span>
+                <strong style={{ fontSize: '0.85rem', wordBreak: 'break-all' }}>
+                  {inventory.sn_mac_address || '—'}
+                </strong>
               </div>
               <div>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Company</span>
@@ -132,7 +136,9 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
                 <strong style={{ fontSize: '0.85rem' }}>{inventory.status || '—'}</strong>
               </div>
               <div style={{ gridColumn: 'span 2' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Assigned User</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>
+                  Assigned User
+                </span>
                 <strong style={{ fontSize: '0.85rem' }}>
                   {assignedUser ? `${assignedUser.name} (${assignedUser.username})` : 'Unassigned'}
                 </strong>
@@ -218,11 +224,18 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
                       </>
                     ) : (
                       <>
-                        <button type="button" className="btn btn-secondary leave-btn-xs" onClick={handleDownload} style={{ padding: '0.4rem 0.85rem' }}>
+                        <button
+                          type="button"
+                          className="btn btn-secondary leave-btn-xs"
+                          onClick={handleDownload}
+                          style={{ padding: '0.4rem 0.85rem' }}
+                        >
                           <Download size={13} style={{ marginRight: '0.2rem' }} /> Download Attachment
                         </button>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {attachmentUrl.startsWith('data:image/') ? 'Image preview not available' : 'Attachment preview not available'}
+                          {attachmentUrl.startsWith('data:image/')
+                            ? 'Image preview not available'
+                            : 'Attachment preview not available'}
                         </span>
                       </>
                     )}
@@ -233,9 +246,17 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
 
             <div style={{ gridColumn: 'span 2' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Created At</span>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{formatDate(inventory.created_at)}</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.5rem' }}>Updated At</span>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{formatDate(inventory.updated_at)}</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                {formatDate(inventory.created_at)}
+              </span>
+              <span
+                style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.5rem' }}
+              >
+                Updated At
+              </span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                {formatDate(inventory.updated_at)}
+              </span>
             </div>
           </div>
 

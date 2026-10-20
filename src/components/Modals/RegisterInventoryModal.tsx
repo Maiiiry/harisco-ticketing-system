@@ -23,7 +23,13 @@ interface RegisterInventoryModalProps {
   }) => Promise<void>;
 }
 
-export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ isOpen, onClose, users, inventory: inventoryProp = [], onSubmit }) => {
+export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
+  isOpen,
+  onClose,
+  users,
+  inventory: inventoryProp = [],
+  onSubmit,
+}) => {
   const [company, setCompany] = useState('');
   const [entity, setEntity] = useState<InventoryEntity | null>(null);
   const [category, setCategory] = useState<InventoryCategory | null>(null);
@@ -147,9 +153,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="panel-header inv-modal-header">
-          <h2 className="panel-title inv-modal-title">
-            Register New Inventory
-          </h2>
+          <h2 className="panel-title inv-modal-title">Register New Inventory</h2>
           <button
             id="btn-register-inventory-modal-close"
             className="btn btn-secondary inv-modal-close-btn"
@@ -161,11 +165,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
 
         <form onSubmit={handleSubmit}>
           <div className="inv-modal-body">
-            {errorMsg && (
-              <div className="inv-error-msg">
-                {errorMsg}
-              </div>
-            )}
+            {errorMsg && <div className="inv-error-msg">{errorMsg}</div>}
 
             <div className="inv-form-grid">
               <div className="form-group">
@@ -245,106 +245,96 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
                   onChange={handleAttachmentChange}
                 />
-                {attachmentFileName && (
-                  <span className="inv-attachment-filename">
-                    {attachmentFileName}
-                  </span>
-                )}
+                {attachmentFileName && <span className="inv-attachment-filename">{attachmentFileName}</span>}
               </div>
             </div>
 
             <div className="inv-form-grid">
-                <div className="form-group inv-span-2">
-                  <label htmlFor="inventory-entity-select" className="form-label">
-                    Entity
-                  </label>
-                  <select
-                    id="inventory-entity-select"
-                    className="form-input inv-select-primary-bg"
-                    value={entity ?? ''}
-                    onChange={(e) => {
-                      setEntity(e.target.value as InventoryEntity);
-                      setAssignedUserId(null);
-                      setAssigneeInput('');
-                    }}
-                    required
-                  >
-                    <option value="" selected disabled>
-                      -- Select Entity --
+              <div className="form-group inv-span-2">
+                <label htmlFor="inventory-entity-select" className="form-label">
+                  Entity
+                </label>
+                <select
+                  id="inventory-entity-select"
+                  className="form-input inv-select-primary-bg"
+                  value={entity ?? ''}
+                  onChange={(e) => {
+                    setEntity(e.target.value as InventoryEntity);
+                    setAssignedUserId(null);
+                    setAssigneeInput('');
+                  }}
+                  required
+                >
+                  <option value="" selected disabled>
+                    -- Select Entity --
+                  </option>
+                  {INVENTORY_ENTITY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
                     </option>
-                    {INVENTORY_ENTITY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  ))}
+                </select>
+              </div>
 
-                <div className="form-group inv-span-2">
-                  <label htmlFor="inventory-assignee-select" className="form-label">
-                    Assignee (Optional)
-                  </label>
-                  <div
-                    id="inventory-assignee-select"
-                    className="inv-assignee-wrap"
-                  >
-                    <input
-                      id="inventory-assignee-input"
-                      type="text"
-                      className="form-input inv-select-primary-bg"
-                      disabled={!entity}
-                      value={assignedUserId ? assigneeInput : ''}
-                      placeholder="-- Select User (Optional) --"
-                      onChange={(e) => {
-                        setAssigneeInput(e.target.value);
-                        setAssigneeOpen(true);
-                      }}
-                      onFocus={() => setAssigneeOpen(true)}
-                      onBlur={() => setTimeout(() => setAssigneeOpen(false), 150)}
-                    />
-                    {assigneeOpen && (
-                      <div className="inv-assignee-dropdown">
-                        {filteredAssignees.length === 0 ? (
-                          <div className="inv-assignee-empty">
-                            No matching users available.
-                          </div>
-                        ) : (
-                          filteredAssignees.map((u) => (
-                            <div
-                              key={u.id}
-                              className={`inv-assignee-item ${assignedUserId === u.id ? 'inv-assignee-item-active' : ''}`}
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                setAssignedUserId(u.id);
-                                setAssigneeInput(`${u.name} (${formatEmployeeCode(u.username || u.id)})`);
-                                setAssigneeOpen(false);
-                              }}
-                            >
-                              {u.name} ({formatEmployeeCode(u.username || u.id)})
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="form-group inv-span-2">
-                  <label htmlFor="inventory-device-id-input" className="form-label">
-                    Device ID
-                  </label>
+              <div className="form-group inv-span-2">
+                <label htmlFor="inventory-assignee-select" className="form-label">
+                  Assignee (Optional)
+                </label>
+                <div id="inventory-assignee-select" className="inv-assignee-wrap">
                   <input
-                    id="inventory-device-id-input"
+                    id="inventory-assignee-input"
                     type="text"
-                    className="form-input"
-                    placeholder="HC-Entity-Manufacturer-Category-0001"
-                    value={generatedDeviceId}
-                    readOnly
-                    required
+                    className="form-input inv-select-primary-bg"
+                    disabled={!entity}
+                    value={assignedUserId ? assigneeInput : ''}
+                    placeholder="-- Select User (Optional) --"
+                    onChange={(e) => {
+                      setAssigneeInput(e.target.value);
+                      setAssigneeOpen(true);
+                    }}
+                    onFocus={() => setAssigneeOpen(true)}
+                    onBlur={() => setTimeout(() => setAssigneeOpen(false), 150)}
                   />
+                  {assigneeOpen && (
+                    <div className="inv-assignee-dropdown">
+                      {filteredAssignees.length === 0 ? (
+                        <div className="inv-assignee-empty">No matching users available.</div>
+                      ) : (
+                        filteredAssignees.map((u) => (
+                          <div
+                            key={u.id}
+                            className={`inv-assignee-item ${assignedUserId === u.id ? 'inv-assignee-item-active' : ''}`}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              setAssignedUserId(u.id);
+                              setAssigneeInput(`${u.name} (${formatEmployeeCode(u.username || u.id)})`);
+                              setAssigneeOpen(false);
+                            }}
+                          >
+                            {u.name} ({formatEmployeeCode(u.username || u.id)})
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
+              <div className="form-group inv-span-2">
+                <label htmlFor="inventory-device-id-input" className="form-label">
+                  Device ID
+                </label>
+                <input
+                  id="inventory-device-id-input"
+                  type="text"
+                  className="form-input"
+                  placeholder="HC-Entity-Manufacturer-Category-0001"
+                  value={generatedDeviceId}
+                  readOnly
+                  required
+                />
+              </div>
+            </div>
           </div>
 
           <div className="inv-modal-footer">
