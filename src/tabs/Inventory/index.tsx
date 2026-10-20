@@ -291,7 +291,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
       </span>
 
       {/* Inventory List Table */}
-      <div className="panel" style={{ padding: 0, overflow: 'hidden', minHeight: '24rem' }}>
+      <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="table-wrapper inventory-table-wrapper">
           <table className="data-table">
             <thead>
