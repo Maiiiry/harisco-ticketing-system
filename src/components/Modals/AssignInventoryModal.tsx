@@ -1,13 +1,16 @@
 import { X } from 'lucide-react';
 import React, { useState } from 'react';
 
-import type { AppUser, InventoryEntity } from '../../types';
+import type { AppUser, Inventory, InventoryEntity } from '../../types';
 
 import { INVENTORY_ENTITY_OPTIONS } from '../../constants';
-import { formatEmployeeCode } from '../../utils';
+import { formatEmployeeCode, generateDeviceId } from '../../utils';
 
 interface AssignInventoryModalProps {
   inventoryId: string;
+  inventory: Inventory[];
+  company: string;
+  category: InventoryCategory;
   users: AppUser[];
   isOpen: boolean;
   onClose: () => void;
@@ -16,6 +19,9 @@ interface AssignInventoryModalProps {
 
 export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
   inventoryId,
+  inventory,
+  company,
+  category,
   users,
   isOpen,
   onClose,
@@ -25,7 +31,6 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
   const [assignedUserId, setAssignedUserId] = useState<string | null>(null);
   const [assigneeOpen, setAssigneeOpen] = useState(false);
   const [assigneeInput, setAssigneeInput] = useState('');
-  const [deviceId, setDeviceId] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const activeUsers = users.filter((u) => u.is_active !== 0);
@@ -46,6 +51,11 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
     return u.name.toLowerCase().includes(term) || (u.username || '').toLowerCase().includes(term);
   });
 
+  const generatedDeviceId = React.useMemo(() => {
+    if (!entity || !category || !company.trim()) return '';
+    return generateDeviceId({ entity, manufacturer: company, category, inventory });
+  }, [entity, company, category, inventory]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,17 +67,11 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
       return;
     }
 
-    if (!deviceId.trim()) {
-      setErrorMsg('Device ID is required.');
-      return;
-    }
-
     setErrorMsg(null);
-    await onSubmit(inventoryId, entity, assignedUserId, deviceId.trim());
+    await onSubmit(inventoryId, entity, assignedUserId, generatedDeviceId);
     setEntity(null);
     setAssignedUserId(null);
     setAssigneeInput('');
-    setDeviceId('');
     onClose();
   };
 
@@ -95,9 +99,8 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
               </div>
             )}
 
-            <div className="inv-date-row">
-              <div className="inv-form-grid">
-                <div className="form-group">
+            <div className="inv-form-grid">
+                <div className="form-group inv-span-2">
                   <label htmlFor="assign-inventory-entity-select" className="form-label">
                     Entity
                   </label>
@@ -123,7 +126,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                   </select>
                 </div>
 
-                <div className="form-group">
+                <div className="form-group inv-span-2">
                   <label htmlFor="assign-inventory-assignee-select" className="form-label">
                     Assignee (Optional)
                   </label>
@@ -156,7 +159,8 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                             <div
                               key={u.id}
                               className={`inv-assignee-item ${assignedUserId === u.id ? 'inv-assignee-item-active' : ''}`}
-                              onClick={() => {
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
                                 setAssignedUserId(u.id);
                                 setAssigneeInput(`${u.name} (${formatEmployeeCode(u.username || u.id)})`);
                                 setAssigneeOpen(false);
@@ -179,14 +183,13 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                     id="assign-inventory-device-id-input"
                     type="text"
                     className="form-input"
-                    placeholder="e.g. HC-HQ-Dell-Lap-0001"
-                    value={deviceId}
-                    onChange={(e) => setDeviceId(e.target.value)}
+                    placeholder="HC-HQ-Dell-Lap-0001"
+                    value={generatedDeviceId}
+                    readOnly
                     required
                   />
                 </div>
               </div>
-            </div>
           </div>
 
           <div className="inv-modal-footer">
@@ -197,7 +200,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
               id="btn-assign-inventory-submit"
               type="submit"
               className="btn btn-primary"
-              disabled={!entity || !deviceId.trim()}
+              disabled={!entity || !generatedDeviceId}
             >
               Assign Inventory
             </button>

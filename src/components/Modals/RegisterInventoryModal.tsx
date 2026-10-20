@@ -253,11 +253,8 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
               </div>
             </div>
 
-            <div
-              className="inv-date-row"
-            >
-              <div className="inv-form-grid">
-                <div className="form-group">
+            <div className="inv-form-grid">
+                <div className="form-group inv-span-2">
                   <label htmlFor="inventory-entity-select" className="form-label">
                     Entity
                   </label>
@@ -283,7 +280,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                   </select>
                 </div>
 
-                <div className="form-group">
+                <div className="form-group inv-span-2">
                   <label htmlFor="inventory-assignee-select" className="form-label">
                     Assignee (Optional)
                   </label>
@@ -294,8 +291,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                     <input
                       id="inventory-assignee-input"
                       type="text"
-                      className="form-input"
-                      style={{ backgroundColor: 'var(--bg-primary)' }}
+                      className="form-input inv-select-primary-bg"
                       disabled={!entity}
                       value={assignedUserId ? assigneeInput : ''}
                       placeholder="-- Select User (Optional) --"
@@ -317,7 +313,8 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                             <div
                               key={u.id}
                               className={`inv-assignee-item ${assignedUserId === u.id ? 'inv-assignee-item-active' : ''}`}
-                              onClick={() => {
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
                                 setAssignedUserId(u.id);
                                 setAssigneeInput(`${u.name} (${formatEmployeeCode(u.username || u.id)})`);
                                 setAssigneeOpen(false);
@@ -347,7 +344,6 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({ 
                   />
                 </div>
               </div>
-            </div>
 
           </div>
 
