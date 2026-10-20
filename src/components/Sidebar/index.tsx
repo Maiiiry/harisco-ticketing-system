@@ -79,13 +79,13 @@ const MENU_ITEMS: MenuItem[] = [
     ],
   },
   {
-    label: 'Inventory',
+    label: 'Assets',
     icon: HardDrive,
     roles: ['it', 'manager', 'executive'],
     children: [
       {
         id: 'inventory',
-        label: 'Inventory Tracking',
+        label: 'Asset Tracking',
         icon: HardDrive,
         roles: ['it', 'manager', 'executive'],
       },

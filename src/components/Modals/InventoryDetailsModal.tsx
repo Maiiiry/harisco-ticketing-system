@@ -78,7 +78,7 @@ export const InventoryDetailsModal: React.FC<InventoryDetailsModalProps> = ({ is
           {/* Header */}
           <div className="modal-header-bar">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <h2 className="panel-title modal-title-sm">Inventory Details</h2>
+              <h2 className="panel-title modal-title-sm">Asset Details</h2>
             </div>
             <button className="btn btn-secondary modal-close-btn-sm" onClick={onClose}>
               <X size={16} />

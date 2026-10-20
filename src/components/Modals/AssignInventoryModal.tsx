@@ -79,7 +79,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="panel-header inv-modal-header">
-          <h2 className="panel-title inv-modal-title">Assign Inventory to User</h2>
+          <h2 className="panel-title inv-modal-title">Assign Asset to User</h2>
           <button
             id="btn-assign-inventory-modal-close"
             className="btn btn-secondary inv-modal-close-btn"
@@ -191,7 +191,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
               className="btn btn-primary"
               disabled={!entity || !generatedDeviceId}
             >
-              Assign Inventory
+              Assign Asset
             </button>
           </div>
         </form>

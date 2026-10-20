@@ -164,15 +164,15 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         }}
       >
         <div>
-          <h1 className="page-title">Inventory Tracking</h1>
+          <h1 className="page-title">Asset Tracking</h1>
           <p className="page-subtitle">
-            Manage company devices and hardware inventory across stocked, assigned, and active states.
+            Manage company devices and hardware assets across stocked, assigned, and active states.
           </p>
         </div>
         {isIT && (
           <button id="btn-register-inventory" className="btn btn-primary" onClick={onRegisterClick}>
             <UserPlus size={16} />
-            Register Inventory
+            Register Asset
           </button>
         )}
       </div>
@@ -184,21 +184,21 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           className={`btn ${subTab === 'all' ? 'btn-primary' : 'btn-secondary'} inventory-tab-btn`}
           onClick={() => handleSubTabChange('all')}
         >
-          <Layers size={14} /> All Inventory ({allCount})
+          <Layers size={14} /> All Assets ({allCount})
         </button>
         <button
           id="tab-stocked-inventory"
           className={`btn ${subTab === 'stocked' ? 'btn-primary' : 'btn-secondary'} inventory-tab-btn`}
           onClick={() => handleSubTabChange('stocked')}
         >
-          <HardDrive size={14} /> Stocked Inventory ({stockedCount})
+          <HardDrive size={14} /> Stocked Assets ({stockedCount})
         </button>
         <button
           id="tab-assigned-inventory"
           className={`btn ${subTab === 'assigned' ? 'btn-primary' : 'btn-secondary'} inventory-tab-btn`}
           onClick={() => handleSubTabChange('assigned')}
         >
-          <UserCheck size={14} /> Assigned Inventory ({assignedCount})
+          <UserCheck size={14} /> Assigned Assets ({assignedCount})
         </button>
       </div>
 
@@ -290,7 +290,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
       {/* showing inventory count */}
       <span className="stat-desc inventory-stat-desc">
-        Showing {filteredInventory.length} of {inventory.length} inventory
+        Showing {filteredInventory.length} of {inventory.length} assets
       </span>
 
       {/* Inventory List Table */}
@@ -400,10 +400,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                     }}
                   >
                     {subTab === 'stocked'
-                      ? 'No stocked inventory available.'
+                      ? 'No stocked assets available.'
                       : subTab === 'assigned'
-                        ? 'No assigned inventory.'
-                        : 'No inventory items found.'}
+                        ? 'No assigned assets.'
+                        : 'No asset items found.'}
                   </td>
                 </tr>
               )}

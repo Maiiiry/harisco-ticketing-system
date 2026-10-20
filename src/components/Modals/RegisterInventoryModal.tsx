@@ -153,7 +153,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="panel-header inv-modal-header">
-          <h2 className="panel-title inv-modal-title">Register New Inventory</h2>
+          <h2 className="panel-title inv-modal-title">Register New Asset</h2>
           <button
             id="btn-register-inventory-modal-close"
             className="btn btn-secondary inv-modal-close-btn"
@@ -342,7 +342,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
               Cancel
             </button>
             <button id="btn-register-inventory-submit" type="submit" className="btn btn-primary">
-              Register Inventory
+              Register Asset
             </button>
           </div>
         </form>
