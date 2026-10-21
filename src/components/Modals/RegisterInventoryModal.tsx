@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import type { AppUser, Inventory, InventoryCategory, InventoryEntity } from '../../types';
 
 import { INVENTORY_CATEGORY_OPTIONS, INVENTORY_ENTITY_OPTIONS } from '../../constants';
-import { generateDeviceId, isValidDeviceId } from '../../utils';
+import { formatEmployeeCode, generateDeviceId, isValidDeviceId } from '../../utils';
 
 interface RegisterInventoryModalProps {
   isOpen: boolean;
@@ -350,7 +350,3 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
     </div>
   );
 };
-
-function formatEmployeeCode(code: string): string {
-  return code.replace(/^(\d{1,5})$/, (_, num) => `HC-${num.padStart(5, '0')}`);
-}
