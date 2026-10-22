@@ -253,16 +253,16 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                 <label htmlFor="inventory-entity-select" className="form-label">
                   Entity
                 </label>
-                  <select
-                    id="inventory-entity-select"
-                    className="form-input inv-select-primary-bg"
-                    value={entity ?? ''}
-                    onChange={(e) => {
-                      setEntity(e.target.value as InventoryEntity);
-                      setAssignedUserId(null);
-                      setAssigneeInput('');
-                    }}
-                  >
+                <select
+                  id="inventory-entity-select"
+                  className="form-input inv-select-primary-bg"
+                  value={entity ?? ''}
+                  onChange={(e) => {
+                    setEntity(e.target.value as InventoryEntity);
+                    setAssignedUserId(null);
+                    setAssigneeInput('');
+                  }}
+                >
                   <option value="" selected disabled>
                     -- Select Entity --
                   </option>

@@ -1990,7 +1990,12 @@ function App() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ status: 'Assigned', assigned_user_id: userId, entity: entity ?? undefined, device_id: deviceId }),
+      body: JSON.stringify({
+        status: 'Assigned',
+        assigned_user_id: userId,
+        entity: entity ?? undefined,
+        device_id: deviceId,
+      }),
     });
 
     if (!res.ok) {

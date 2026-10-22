@@ -49,10 +49,7 @@ export function generateDeviceId(params: {
   const manuf = manufacturer.trim().replace(/\s+/g, '-');
   const prefix = `${DEVICE_ID_PREFIX}${manuf}-${categoryCode}`;
   const count = inventory.filter(
-    (i) =>
-      i.company.trim() === manufacturer.trim() &&
-      i.entity === (entity ?? null) &&
-      i.category === category
+    (i) => i.company.trim() === manufacturer.trim() && i.entity === (entity ?? null) && i.category === category
   ).length;
   const seq = (count + 1).toString().padStart(DEVICE_ID_SEQ_PAD, '0');
   return `${prefix}-${seq}`;
