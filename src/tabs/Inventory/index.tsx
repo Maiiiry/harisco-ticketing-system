@@ -350,7 +350,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                         <button
                           className="btn btn-secondary"
                           style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
-                          aria-label="Assign inventory"
+                          aria-label="Assign asset"
                           onClick={(e) => {
                             e.stopPropagation();
                             onAssignOpen(item.id);
@@ -366,6 +366,9 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                           aria-label="Un-assign inventory"
                           onClick={(e) => {
                             e.stopPropagation();
+                            if (!window.confirm('Are you sure you want to un-assign this asset?')) {
+                              return;
+                            }
                             onUpdateInventory(item.id, { status: 'Stocked', assigned_user_id: null });
                           }}
                         >
@@ -379,6 +382,9 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                           aria-label="Delete inventory"
                           onClick={(e) => {
                             e.stopPropagation();
+                            if (!window.confirm('Are you sure you want to delete this asset? This cannot be undone.')) {
+                              return;
+                            }
                             onDeleteInventory(item.id);
                           }}
                         >

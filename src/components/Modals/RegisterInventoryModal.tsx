@@ -5,7 +5,6 @@ import type { AppUser, Inventory, InventoryCategory, InventoryEntity } from '../
 
 import { INVENTORY_CATEGORY_OPTIONS, INVENTORY_ENTITY_OPTIONS } from '../../constants';
 import { formatEmployeeCode, generateDeviceId, isValidDeviceId } from '../../utils';
-
 interface RegisterInventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,7 +12,7 @@ interface RegisterInventoryModalProps {
   inventory?: Inventory[];
   onSubmit: (data: {
     company: string;
-    entity: InventoryEntity;
+    entity?: InventoryEntity | null;
     category: InventoryCategory;
     details: string;
     device_id: string;
@@ -54,8 +53,8 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
   };
 
   const generatedDeviceId = React.useMemo(() => {
-    if (!entity || !category || !company.trim()) return '';
-    return generateDeviceId({ entity, manufacturer: company, category, inventory: inventoryProp });
+    if (!category || !company.trim()) return '';
+    return generateDeviceId({ entity: entity ?? undefined, manufacturer: company, category, inventory: inventoryProp });
   }, [entity, category, company, inventoryProp]);
   const filteredAssignees = activeUsers.filter((u) => {
     const allowedRoles = entity ? entityRoleMap[entity] : [];
@@ -96,10 +95,6 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
       setErrorMsg('Category is required.');
       return;
     }
-    if (!entity) {
-      setErrorMsg('Entity is required.');
-      return;
-    }
     if (!finalCompany) {
       setErrorMsg('Company is required.');
       return;
@@ -113,7 +108,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
       return;
     }
     if (!isValidDeviceId(finalDeviceId)) {
-      setErrorMsg('Device ID must follow the format HC-Entity-Manufacturer-Category-0001.');
+      setErrorMsg('Device ID must follow the format HC-Manufacturer-Category-0001.');
       return;
     }
     if (!finalSnMacAddress) {
@@ -121,15 +116,19 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
       return;
     }
 
+    if (!window.confirm('Are you sure you want to register this asset?')) {
+      return;
+    }
+
     setErrorMsg(null);
     try {
       await onSubmit({
-        company: finalCompany,
+        company: company.trim(),
         entity,
         category,
-        details: finalDetails,
-        device_id: finalDeviceId,
-        sn_mac_address: finalSnMacAddress,
+        details: details.trim(),
+        device_id: generatedDeviceId,
+        sn_mac_address: snMacAddress.trim(),
         assigned_user_id: assignedUserId,
         attachment,
       });
@@ -145,7 +144,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
       setAttachmentFileName(null);
       onClose();
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to register inventory. Please try again.');
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to register asset. Please try again.');
     }
   };
 
@@ -207,7 +206,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
 
               <div className="form-group inv-span-2">
                 <label htmlFor="inventory-company-input" className="form-label">
-                  Manufacturter
+                  Manufacturer
                 </label>
                 <input
                   id="inventory-company-input"
@@ -263,7 +262,6 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                     setAssignedUserId(null);
                     setAssigneeInput('');
                   }}
-                  required
                 >
                   <option value="" selected disabled>
                     -- Select Entity --
@@ -328,7 +326,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                   id="inventory-device-id-input"
                   type="text"
                   className="form-input"
-                  placeholder="HC-Entity-Manufacturer-Category-0001"
+                  placeholder="HC-Manufacturer-Category-0001"
                   value={generatedDeviceId}
                   readOnly
                   required

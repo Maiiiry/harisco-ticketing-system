@@ -14,7 +14,7 @@ interface AssignInventoryModalProps {
   users: AppUser[];
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (inventoryId: string, entity: InventoryEntity, userId: string | null, deviceId: string) => void;
+  onSubmit: (inventoryId: string, entity: InventoryEntity | null, userId: string | null, deviceId: string) => void;
 }
 
 export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
@@ -52,8 +52,8 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
   });
 
   const generatedDeviceId = React.useMemo(() => {
-    if (!entity || !category || !company.trim()) return '';
-    return generateDeviceId({ entity, manufacturer: company, category, inventory });
+    if (!category || !company.trim()) return '';
+    return generateDeviceId({ entity: entity ?? undefined, manufacturer: company, category, inventory });
   }, [entity, company, category, inventory]);
 
   if (!isOpen) return null;
@@ -62,12 +62,10 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!entity) {
-      setErrorMsg('Entity is required.');
+    if (!window.confirm('Are you sure you want to assign this asset?')) {
       return;
     }
 
-    setErrorMsg(null);
     await onSubmit(inventoryId, entity, assignedUserId, generatedDeviceId);
     setEntity(null);
     setAssignedUserId(null);
@@ -107,7 +105,6 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                     setAssignedUserId(null);
                     setAssigneeInput('');
                   }}
-                  required
                 >
                   <option value="" selected disabled>
                     -- Select Entity --
@@ -172,7 +169,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                   id="assign-inventory-device-id-input"
                   type="text"
                   className="form-input"
-                  placeholder="HC-HQ-Dell-Lap-0001"
+                  placeholder="HC-Dell-Lap-0001"
                   value={generatedDeviceId}
                   readOnly
                   required
@@ -189,7 +186,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
               id="btn-assign-inventory-submit"
               type="submit"
               className="btn btn-primary"
-              disabled={!entity || !generatedDeviceId}
+              disabled={!generatedDeviceId}
             >
               Assign Asset
             </button>
