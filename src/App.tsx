@@ -1884,7 +1884,7 @@ function App() {
   // Inventory Tracking handlers
   const handleCreateInventory = async (data: {
     company: string;
-    entity: InventoryEntity;
+    entity?: InventoryEntity | null;
     category: InventoryCategory;
     details: string;
     device_id: string;
@@ -1893,8 +1893,8 @@ function App() {
     attachment: string | null;
   }) => {
     if (!token || !currentUser) return;
-    // Enforce device ID format server-side: HC-Entity-Manufacturer-Category-0001
-    // Sequence recalculated from current inventory matching entity + manufacturer + category.
+    // Enforce device ID format server-side: HC-Manufacturer-Category-0001
+    // Sequence recalculated from current inventory matching manufacturer + category.
     const generatedDeviceId = generateDeviceId({
       entity: data.entity,
       manufacturer: data.company,
@@ -1907,7 +1907,7 @@ function App() {
 
     const payload: Record<string, unknown> = {
       company: data.company,
-      entity: data.entity,
+      entity: data.entity ?? 'Others',
       category: data.category,
       details: data.details,
       device_id: generatedDeviceId,
@@ -1978,7 +1978,7 @@ function App() {
 
   const handleAssignInventory = async (
     id: string,
-    entity: InventoryEntity,
+    entity: InventoryEntity | null,
     userId: string | null,
     deviceId: string
   ) => {
@@ -1990,7 +1990,7 @@ function App() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ status: 'Assigned', assigned_user_id: userId, entity, device_id: deviceId }),
+      body: JSON.stringify({ status: 'Assigned', assigned_user_id: userId, entity: entity ?? undefined, device_id: deviceId }),
     });
 
     if (!res.ok) {

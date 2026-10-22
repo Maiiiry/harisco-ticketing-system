@@ -33,32 +33,32 @@ export const DEVICE_ID_SEQ_PAD = 4;
 
 /**
  * Generates a Device ID in the format:
- * HC-{Entity}-{Manufacturer}-{CategoryCode}-{sequence}
- * Example: HC-HQ-Dell-Lap-0001
+ * HC-{Manufacturer}-{CategoryCode}-{sequence}
+ * Example: HC-Dell-Lap-0001
  * The sequence is calculated from existing inventory matching the same
- * entity + manufacturer + category combination.
+ * manufacturer + category combination. Entity is no longer part of the ID.
  */
 export function generateDeviceId(params: {
-  entity: InventoryEntity;
+  entity?: InventoryEntity | null;
   manufacturer: string;
   category: InventoryCategory;
   inventory: Inventory[];
 }): string {
-  const { entity, manufacturer, category, inventory } = params;
+  const { manufacturer, category, inventory } = params;
   const categoryCode = CATEGORY_DEVICE_CODES[category] ?? category;
   const manuf = manufacturer.trim().replace(/\s+/g, '-');
-  const prefix = `${DEVICE_ID_PREFIX}${entity}-${manuf}-${categoryCode}`;
+  const prefix = `${DEVICE_ID_PREFIX}${manuf}-${categoryCode}`;
   const count = inventory.filter(
-    (i) => i.entity === entity && i.company.trim() === manufacturer.trim() && i.category === category
+    (i) => i.company.trim() === manufacturer.trim() && i.category === category
   ).length;
   const seq = (count + 1).toString().padStart(DEVICE_ID_SEQ_PAD, '0');
   return `${prefix}-${seq}`;
 }
 
 /**
- * Validates a Device ID against the HC-Entity-Manufacturer-Category-Sequence format.
+ * Validates a Device ID against the HC-Manufacturer-Category-Sequence format.
  */
-export const DEVICE_ID_REGEX = /^HC-[A-Za-z]+-[A-Za-z0-9-]+-[A-Za-z]+-\d{4}$/;
+export const DEVICE_ID_REGEX = /^HC-[A-Za-z0-9-]+-[A-Za-z]+-\d{4}$/;
 
 export function isValidDeviceId(deviceId: string): boolean {
   return DEVICE_ID_REGEX.test(deviceId.trim());
