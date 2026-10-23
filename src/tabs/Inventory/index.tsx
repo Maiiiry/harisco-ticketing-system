@@ -245,7 +245,9 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '0 0 auto' }}>
             <Filter size={14} style={{ color: 'var(--text-muted)' }} />
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Manufacturer:</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+              Manufacturer:
+            </span>
             <select
               id="filter-company-select"
               className="form-input"

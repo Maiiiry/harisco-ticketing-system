@@ -122,9 +122,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                     setAssigneeInput('');
                   }}
                 >
-                  <option value="">
-                    -- Select Entity --
-                  </option>
+                  <option value="">-- Select Entity --</option>
                   {INVENTORY_ENTITY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}

@@ -208,9 +208,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                   onChange={(e) => setCategory(e.target.value as InventoryCategory)}
                   required
                 >
-                  <option value="">
-                    -- Select Category --
-                  </option>
+                  <option value="">-- Select Category --</option>
                   {INVENTORY_CATEGORY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -282,9 +280,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                     setAssigneeInput('');
                   }}
                 >
-                  <option value="">
-                    -- Select Entity --
-                  </option>
+                  <option value="">-- Select Entity --</option>
                   {INVENTORY_ENTITY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
