@@ -2010,7 +2010,6 @@ function App() {
 
   const handleDeleteInventory = async (id: string) => {
     if (!token || !currentUser) return;
-    if (!window.confirm('Are you sure you want to delete this inventory?')) return;
     try {
       const res = await fetch(`/api/inventory/${id}`, {
         method: 'DELETE',

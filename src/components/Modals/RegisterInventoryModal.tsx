@@ -167,6 +167,21 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
             {errorMsg && <div className="inv-error-msg">{errorMsg}</div>}
 
             <div className="inv-form-grid">
+              <div className="form-group inv-span-2">
+                <label htmlFor="inventory-device-id-input" className="form-label">
+                  Device ID
+                </label>
+                <input
+                  id="inventory-device-id-input"
+                  type="text"
+                  className="form-input"
+                  placeholder="HC-Manufacturer-Category-0001"
+                  value={generatedDeviceId}
+                  readOnly
+                  required
+                />
+              </div>
+
               <div className="form-group">
                 <label htmlFor="inventory-sn-mac-input" className="form-label">
                   SN / MAC Address
@@ -193,9 +208,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                   onChange={(e) => setCategory(e.target.value as InventoryCategory)}
                   required
                 >
-                  <option value="" selected disabled>
-                    -- Select Category --
-                  </option>
+                  <option value="">-- Select Category --</option>
                   {INVENTORY_CATEGORY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -250,6 +263,10 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
 
             <div className="inv-form-grid">
               <div className="form-group inv-span-2">
+                <label className="form-label">Assignment</label>
+              </div>
+
+              <div className="form-group inv-span-2">
                 <label htmlFor="inventory-entity-select" className="form-label">
                   Entity
                 </label>
@@ -263,9 +280,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                     setAssigneeInput('');
                   }}
                 >
-                  <option value="" selected disabled>
-                    -- Select Entity --
-                  </option>
+                  <option value="">-- Select Entity --</option>
                   {INVENTORY_ENTITY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -287,7 +302,9 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                     value={assignedUserId ? assigneeInput : ''}
                     placeholder="-- Select User (Optional) --"
                     onChange={(e) => {
-                      setAssigneeInput(e.target.value);
+                      const val = e.target.value;
+                      setAssigneeInput(val);
+                      if (!val) setAssignedUserId(null);
                       setAssigneeOpen(true);
                     }}
                     onFocus={() => setAssigneeOpen(true)}
@@ -316,21 +333,6 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div className="form-group inv-span-2">
-                <label htmlFor="inventory-device-id-input" className="form-label">
-                  Device ID
-                </label>
-                <input
-                  id="inventory-device-id-input"
-                  type="text"
-                  className="form-input"
-                  placeholder="HC-Manufacturer-Category-0001"
-                  value={generatedDeviceId}
-                  readOnly
-                  required
-                />
               </div>
             </div>
           </div>

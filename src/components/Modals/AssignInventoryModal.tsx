@@ -53,7 +53,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
 
   const generatedDeviceId = React.useMemo(() => {
     if (!category || !company.trim()) return '';
-    return generateDeviceId({ entity: entity ?? undefined, manufacturer: company, category, inventory });
+    return generateDeviceId({ manufacturer: company, category, inventory });
   }, [entity, company, category, inventory]);
 
   if (!isOpen) return null;
@@ -93,6 +93,21 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
 
             <div className="inv-form-grid">
               <div className="form-group inv-span-2">
+                <label htmlFor="assign-inventory-device-id-input" className="form-label">
+                  Device ID
+                </label>
+                <input
+                  id="assign-inventory-device-id-input"
+                  type="text"
+                  className="form-input"
+                  placeholder="HC-Dell-Lap-0001"
+                  value={generatedDeviceId}
+                  readOnly
+                  required
+                />
+              </div>
+
+              <div className="form-group inv-span-2">
                 <label htmlFor="assign-inventory-entity-select" className="form-label">
                   Entity
                 </label>
@@ -101,14 +116,13 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                   className="form-input inv-select-primary-bg"
                   value={entity ?? ''}
                   onChange={(e) => {
-                    setEntity(e.target.value as InventoryEntity);
+                    const val = e.target.value;
+                    setEntity(val ? (val as InventoryEntity) : null);
                     setAssignedUserId(null);
                     setAssigneeInput('');
                   }}
                 >
-                  <option value="" selected disabled>
-                    -- Select Entity --
-                  </option>
+                  <option value="">-- Select Entity --</option>
                   {INVENTORY_ENTITY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
@@ -130,7 +144,9 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                     value={assignedUserId ? assigneeInput : ''}
                     placeholder="-- Select User (Optional) --"
                     onChange={(e) => {
-                      setAssigneeInput(e.target.value);
+                      const val = e.target.value;
+                      setAssigneeInput(val);
+                      if (!val) setAssignedUserId(null);
                       setAssigneeOpen(true);
                     }}
                     onFocus={() => setAssigneeOpen(true)}
@@ -159,21 +175,6 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div className="form-group inv-span-2">
-                <label htmlFor="assign-inventory-device-id-input" className="form-label">
-                  Device ID
-                </label>
-                <input
-                  id="assign-inventory-device-id-input"
-                  type="text"
-                  className="form-input"
-                  placeholder="HC-Dell-Lap-0001"
-                  value={generatedDeviceId}
-                  readOnly
-                  required
-                />
               </div>
             </div>
           </div>
