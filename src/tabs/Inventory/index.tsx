@@ -245,7 +245,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '0 0 auto' }}>
             <Filter size={14} style={{ color: 'var(--text-muted)' }} />
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Company:</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Manufacturer:</span>
             <select
               id="filter-company-select"
               className="form-input"
@@ -256,7 +256,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 onCompanyFilterChange?.(e.target.value);
               }}
             >
-              <option value="all">All Companies</option>
+              <option value="all">All Manufacturer</option>
               {companies.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -301,7 +301,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               <tr>
                 <th>Device ID</th>
                 <th>SN / MAC</th>
-                <th>Company</th>
+                <th>Manufacturer</th>
                 <th>Entity</th>
                 <th>Category</th>
                 <th>Details</th>
