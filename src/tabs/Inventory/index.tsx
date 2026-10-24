@@ -4,7 +4,12 @@ import React, { useMemo, useState } from 'react';
 import type { AppUser, Inventory, InventoryCategory, InventoryEntity, InventoryStatus } from '../../types';
 
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { INVENTORY_CATEGORY_OPTIONS, INVENTORY_ENTITY_OPTIONS, INVENTORY_STATUS_LABELS, INVENTORY_STATUS_OPTIONS } from '../../constants';
+import {
+  INVENTORY_CATEGORY_OPTIONS,
+  INVENTORY_ENTITY_OPTIONS,
+  INVENTORY_STATUS_LABELS,
+  INVENTORY_STATUS_OPTIONS,
+} from '../../constants';
 import { generateDeviceId } from '../../utils';
 import './Inventory.css';
 
@@ -382,7 +387,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                     <tr
                       key={item.id}
                       onClick={isEditing ? undefined : () => onRowClick?.(item)}
-                      style={{ cursor: (isEditing || !onRowClick) ? 'default' : 'pointer' }}
+                      style={{ cursor: isEditing || !onRowClick ? 'default' : 'pointer' }}
                     >
                       <td className="inventory-device-id">
                         {isEditing ? (
@@ -580,7 +585,11 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                                 aria-label="Delete inventory"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (!window.confirm('Are you sure you want to delete this asset? This cannot be undone.')) {
+                                  if (
+                                    !window.confirm(
+                                      'Are you sure you want to delete this asset? This cannot be undone.'
+                                    )
+                                  ) {
                                     return;
                                   }
                                   onDeleteInventory(item.id);
