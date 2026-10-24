@@ -180,9 +180,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
   const handleEditSave = async (item: Inventory) => {
     if (!editDraft) return;
-    const { entity, company: manufacturer = item.company, category = item.category } = editDraft;
+    const { company: manufacturer = item.company, category = item.category } = editDraft;
     const regeneratedDeviceId = generateDeviceId({
-      entity: entity ?? undefined,
       manufacturer,
       category,
       inventory,

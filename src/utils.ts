@@ -1,4 +1,4 @@
-import type { Inventory, InventoryCategory, InventoryEntity } from './types';
+import type { Inventory, InventoryCategory } from './types';
 
 /**
  * Formats a raw employee code/username into the standard HC-XXXXX format.
@@ -36,20 +36,19 @@ export const DEVICE_ID_SEQ_PAD = 4;
  * HC-{Manufacturer}-{CategoryCode}-{sequence}
  * Example: HC-Dell-Lap-0001
  * The sequence is calculated from existing inventory matching the same
- * manufacturer + entity + category combination.
+ * manufacturer + category combination. Entity does not affect the Device ID.
  */
 export function generateDeviceId(params: {
-  entity?: InventoryEntity | null;
   manufacturer: string;
   category: InventoryCategory;
   inventory: Inventory[];
 }): string {
-  const { entity, manufacturer, category, inventory } = params;
+  const { manufacturer, category, inventory } = params;
   const categoryCode = CATEGORY_DEVICE_CODES[category] ?? category;
   const manuf = manufacturer.trim().replace(/\s+/g, '-');
   const prefix = `${DEVICE_ID_PREFIX}${manuf}-${categoryCode}`;
   const count = inventory.filter(
-    (i) => i.company.trim() === manufacturer.trim() && i.entity === (entity ?? null) && i.category === category
+    (i) => i.company.trim() === manufacturer.trim() && i.category === category
   ).length;
   const seq = (count + 1).toString().padStart(DEVICE_ID_SEQ_PAD, '0');
   return `${prefix}-${seq}`;

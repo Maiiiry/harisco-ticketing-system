@@ -54,8 +54,8 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
 
   const generatedDeviceId = React.useMemo(() => {
     if (!category || !company.trim()) return '';
-    return generateDeviceId({ entity: entity ?? undefined, manufacturer: company, category, inventory: inventoryProp });
-  }, [entity, category, company, inventoryProp]);
+    return generateDeviceId({ manufacturer: company, category, inventory: inventoryProp });
+  }, [category, company, inventoryProp]);
 
   const matchesAssignee = (term: string, u: AppUser): boolean => {
     const t = term.toLowerCase().trim();

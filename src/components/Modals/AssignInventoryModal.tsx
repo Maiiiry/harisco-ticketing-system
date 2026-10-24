@@ -69,7 +69,7 @@ export const AssignInventoryModal: React.FC<AssignInventoryModalProps> = ({
   const generatedDeviceId = React.useMemo(() => {
     if (!category || !company.trim()) return '';
     return generateDeviceId({ manufacturer: company, category, inventory });
-  }, [entity, company, category, inventory]);
+  }, [company, category, inventory]);
 
   if (!isOpen) return null;
 

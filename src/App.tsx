@@ -1896,7 +1896,6 @@ function App() {
     // Enforce device ID format server-side: HC-Manufacturer-Category-0001
     // Sequence recalculated from current inventory matching manufacturer + category.
     const generatedDeviceId = generateDeviceId({
-      entity: data.entity,
       manufacturer: data.company,
       category: data.category,
       inventory,
