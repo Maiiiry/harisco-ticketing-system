@@ -1,10 +1,16 @@
-import { CircleCheckBig, Filter, HardDrive, Layers, Search, Trash, UserCheck, UserPlus } from 'lucide-react';
+import { CircleCheckBig, Edit, Filter, HardDrive, Layers, Search, Trash, UserCheck, UserPlus, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import type { AppUser, Inventory, InventoryStatus } from '../../types';
+import type { AppUser, Inventory, InventoryCategory, InventoryEntity, InventoryStatus } from '../../types';
 
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { INVENTORY_CATEGORY_OPTIONS, INVENTORY_STATUS_LABELS, INVENTORY_STATUS_OPTIONS } from '../../constants';
+import {
+  INVENTORY_CATEGORY_OPTIONS,
+  INVENTORY_ENTITY_OPTIONS,
+  INVENTORY_STATUS_LABELS,
+  INVENTORY_STATUS_OPTIONS,
+} from '../../constants';
+import { generateDeviceId } from '../../utils';
 import './Inventory.css';
 
 interface InventoryTabProps {
@@ -21,7 +27,19 @@ interface InventoryTabProps {
   onEntityFilterChange?: (e: string) => void;
   onRegisterClick: () => void;
   onAssignOpen: (inventoryId: string) => void;
-  onUpdateInventory: (id: string, patch: { status?: InventoryStatus; assigned_user_id?: string | null }) => void;
+  onUpdateInventory: (
+    id: string,
+    patch: {
+      status?: InventoryStatus;
+      assigned_user_id?: string | null;
+      company?: string;
+      entity?: InventoryEntity | null;
+      category?: InventoryCategory;
+      details?: string;
+      sn_mac_address?: string;
+      device_id?: string;
+    }
+  ) => void;
   onDeleteInventory: (id: string) => void;
   onRowClick?: (inventory: Inventory) => void;
   loading?: boolean;
@@ -59,6 +77,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>(defaultSearchQuery ?? '');
   const [companyFilter, setCompanyFilter] = useState<string>(defaultCompanyFilter ?? 'all');
   const [entityFilter, setEntityFilter] = useState<string>(defaultEntityFilter ?? 'all');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<Partial<Inventory> | null>(null);
 
   const subTab = defaultSubTab ?? internalSubTab;
 
@@ -151,6 +171,50 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
     if (!assignedUserId) return null;
     const user = userMapLocal ? userMapLocal.get(assignedUserId) : users.find((u) => u.id === assignedUserId);
     return user ? user.name : assignedUserId;
+  };
+
+  const handleEditOpen = (item: Inventory) => {
+    setEditingId(item.id);
+    setEditDraft({ ...item });
+  };
+
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setEditDraft(null);
+  };
+
+  const handleEditSave = async (item: Inventory) => {
+    if (!editDraft) return;
+    const { company: manufacturer = item.company, category = item.category } = editDraft;
+    const regeneratedDeviceId = generateDeviceId({
+      manufacturer,
+      category,
+      inventory,
+    });
+
+    const changes: {
+      status?: InventoryStatus;
+      assigned_user_id?: string | null;
+      company?: string;
+      entity?: InventoryEntity | null;
+      category?: InventoryCategory;
+      details?: string;
+      sn_mac_address?: string;
+      device_id?: string;
+    } = {};
+
+    if (editDraft.company !== undefined && editDraft.company !== item.company) changes.company = editDraft.company;
+    if (editDraft.entity !== undefined && editDraft.entity !== item.entity) changes.entity = editDraft.entity;
+    if (editDraft.category !== undefined && editDraft.category !== item.category) changes.category = editDraft.category;
+    if (editDraft.details !== undefined && editDraft.details !== item.details) changes.details = editDraft.details;
+    if (editDraft.sn_mac_address !== undefined && editDraft.sn_mac_address !== item.sn_mac_address)
+      changes.sn_mac_address = editDraft.sn_mac_address;
+    if (editDraft.status !== undefined && editDraft.status !== item.status) changes.status = editDraft.status;
+    if (regeneratedDeviceId !== item.device_id) changes.device_id = regeneratedDeviceId;
+
+    await onUpdateInventory(item.id, changes);
+    setEditingId(null);
+    setEditDraft(null);
   };
 
   return (
@@ -316,86 +380,230 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               {loading ? (
                 <LoadingSpinner type="table" rows={6} />
               ) : (
-                filteredInventory.map((item) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => onRowClick?.(item)}
-                    style={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                  >
-                    <td className="inventory-device-id">{item.device_id}</td>
-                    <td style={{ fontSize: '0.85rem' }}>{item.sn_mac_address}</td>
-                    <td style={{ fontSize: '0.85rem' }}>{item.company}</td>
-                    <td style={{ fontSize: '0.85rem' }}>{item.entity}</td>
-                    <td>{getCategoryBadge(item.category)}</td>
-                    <td className="leave-reason" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      {item.details}
-                    </td>
-                    <td>{getStatusBadge(item.status)}</td>
-                    <td style={{ fontSize: '0.85rem' }}>
-                      {item.assigned_user_id || item.assigned_user_name ? (
-                        <span style={{ color: 'var(--text-primary)' }}>
-                          {getAssignedUserName(item.assigned_user_id, item.assigned_user_name, userMap)}
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            color: 'var(--text-muted)',
-                            fontStyle: 'italic',
-                          }}
-                        >
-                          —
-                        </span>
-                      )}
-                    </td>
-                    <td className="actions-cell" style={{ verticalAlign: 'middle' }}>
-                      {(item.status === 'Stocked' || !item.assigned_user_id) && isIT && (
-                        <button
-                          className="btn btn-secondary"
-                          style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
-                          aria-label="Assign asset"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onAssignOpen(item.id);
-                          }}
-                        >
-                          <UserPlus size={14} />
-                        </button>
-                      )}
-                      {item.status === 'Assigned' && isIT && (
-                        <button
-                          className="btn btn-secondary"
-                          style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
-                          aria-label="Un-assign inventory"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!window.confirm('Are you sure you want to un-assign this asset?')) {
-                              return;
-                            }
-                            onUpdateInventory(item.id, { status: 'Stocked', assigned_user_id: null });
-                          }}
-                        >
-                          <CircleCheckBig size={14} />
-                        </button>
-                      )}
-                      {isIT && (
-                        <button
-                          className="btn btn-danger"
-                          style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
-                          aria-label="Delete inventory"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!window.confirm('Are you sure you want to delete this asset? This cannot be undone.')) {
-                              return;
-                            }
-                            onDeleteInventory(item.id);
-                          }}
-                        >
-                          <Trash size={14} />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                filteredInventory.map((item) => {
+                  const isEditing = editingId === item.id;
+                  const draft = editDraft || {};
+                  return (
+                    <tr
+                      key={item.id}
+                      onClick={isEditing ? undefined : () => onRowClick?.(item)}
+                      style={{ cursor: isEditing || !onRowClick ? 'default' : 'pointer' }}
+                    >
+                      <td className="inventory-device-id">
+                        {isEditing ? (
+                          <input
+                            className="form-input"
+                            style={{ width: '100%', height: '38px', backgroundColor: 'var(--bg-primary)' }}
+                            value={draft.device_id ?? item.device_id}
+                            readOnly
+                          />
+                        ) : (
+                          item.device_id
+                        )}
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {isEditing ? (
+                          <input
+                            className="form-input"
+                            style={{ width: '100%', height: '38px', backgroundColor: 'var(--bg-primary)' }}
+                            value={draft.sn_mac_address ?? item.sn_mac_address}
+                            onChange={(e) => setEditDraft({ ...draft, sn_mac_address: e.target.value })}
+                          />
+                        ) : (
+                          item.sn_mac_address
+                        )}
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {isEditing ? (
+                          <input
+                            className="form-input"
+                            style={{ width: '100%', height: '38px', backgroundColor: 'var(--bg-primary)' }}
+                            value={draft.company ?? item.company}
+                            onChange={(e) => setEditDraft({ ...draft, company: e.target.value })}
+                          />
+                        ) : (
+                          item.company
+                        )}
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {isEditing ? (
+                          <select
+                            className="form-input"
+                            style={{ width: '100%', height: '38px', backgroundColor: 'var(--bg-primary)' }}
+                            value={draft.entity ?? item.entity ?? ''}
+                            onChange={(e) => setEditDraft({ ...draft, entity: e.target.value as InventoryEntity })}
+                          >
+                            <option value="">-- Select Entity --</option>
+                            {INVENTORY_ENTITY_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          item.entity
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <select
+                            className="form-input"
+                            style={{ width: '100%', height: '38px', backgroundColor: 'var(--bg-primary)' }}
+                            value={draft.category ?? item.category}
+                            onChange={(e) => setEditDraft({ ...draft, category: e.target.value as InventoryCategory })}
+                          >
+                            {INVENTORY_CATEGORY_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          getCategoryBadge(item.category)
+                        )}
+                      </td>
+                      <td className="leave-reason" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        {isEditing ? (
+                          <input
+                            className="form-input"
+                            style={{ width: '100%', height: '38px', backgroundColor: 'var(--bg-primary)' }}
+                            value={draft.details ?? item.details}
+                            onChange={(e) => setEditDraft({ ...draft, details: e.target.value })}
+                          />
+                        ) : (
+                          item.details
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <select
+                            className="form-input"
+                            style={{ width: '100%', height: '38px', backgroundColor: 'var(--bg-primary)' }}
+                            value={draft.status ?? item.status}
+                            onChange={(e) => setEditDraft({ ...draft, status: e.target.value as InventoryStatus })}
+                          >
+                            {INVENTORY_STATUS_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {INVENTORY_STATUS_LABELS[opt.value as InventoryStatus] || opt.value}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          getStatusBadge(item.status)
+                        )}
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {item.assigned_user_id || item.assigned_user_name ? (
+                          <span style={{ color: 'var(--text-primary)' }}>
+                            {getAssignedUserName(item.assigned_user_id, item.assigned_user_name, userMap)}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              color: 'var(--text-muted)',
+                              fontStyle: 'italic',
+                            }}
+                          >
+                            —
+                          </span>
+                        )}
+                      </td>
+                      <td className="actions-cell" style={{ verticalAlign: 'middle' }}>
+                        {isEditing ? (
+                          <>
+                            <button
+                              className="btn btn-primary"
+                              style={{ width: '2.2rem', height: '1.875rem', padding: 0, marginRight: '4px' }}
+                              aria-label="Save changes"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditSave(item);
+                              }}
+                            >
+                              <CircleCheckBig size={12} />
+                            </button>
+                            <button
+                              className="btn btn-secondary"
+                              style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
+                              aria-label="Cancel edit"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditCancel();
+                              }}
+                            >
+                              <X size={12} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {(item.status === 'Stocked' || !item.assigned_user_id) && isIT && (
+                              <button
+                                className="btn btn-secondary"
+                                style={{ width: '2.2rem', height: '1.875rem', padding: 0, marginRight: '4px' }}
+                                aria-label="Edit asset"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditOpen(item);
+                                }}
+                              >
+                                <Edit size={14} />
+                              </button>
+                            )}
+                            {(item.status === 'Stocked' || !item.assigned_user_id) && isIT && (
+                              <button
+                                className="btn btn-secondary"
+                                style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
+                                aria-label="Assign asset"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onAssignOpen(item.id);
+                                }}
+                              >
+                                <UserPlus size={14} />
+                              </button>
+                            )}
+                            {item.status === 'Assigned' && isIT && (
+                              <button
+                                className="btn btn-secondary"
+                                style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
+                                aria-label="Un-assign inventory"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!window.confirm('Are you sure you want to un-assign this asset?')) {
+                                    return;
+                                  }
+                                  onUpdateInventory(item.id, { status: 'Stocked', assigned_user_id: null });
+                                }}
+                              >
+                                <CircleCheckBig size={14} />
+                              </button>
+                            )}
+                            {isIT && (
+                              <button
+                                className="btn btn-danger"
+                                style={{ width: '2.2rem', height: '1.875rem', padding: 0 }}
+                                aria-label="Delete inventory"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (
+                                    !window.confirm(
+                                      'Are you sure you want to delete this asset? This cannot be undone.'
+                                    )
+                                  ) {
+                                    return;
+                                  }
+                                  onDeleteInventory(item.id);
+                                }}
+                              >
+                                <Trash size={14} />
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
               {filteredInventory.length === 0 && (
                 <tr>

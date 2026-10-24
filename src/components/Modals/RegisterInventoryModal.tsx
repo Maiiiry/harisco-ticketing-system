@@ -54,13 +54,29 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
 
   const generatedDeviceId = React.useMemo(() => {
     if (!category || !company.trim()) return '';
-    return generateDeviceId({ entity: entity ?? undefined, manufacturer: company, category, inventory: inventoryProp });
-  }, [entity, category, company, inventoryProp]);
+    return generateDeviceId({ manufacturer: company, category, inventory: inventoryProp });
+  }, [category, company, inventoryProp]);
+
+  const matchesAssignee = (term: string, u: AppUser): boolean => {
+    const t = term.toLowerCase().trim();
+    if (!t) return true;
+    const name = (u.name || '').toLowerCase();
+    const username = (u.username || '').toLowerCase();
+    if (name.includes(t) || username.includes(t)) return true;
+    const digits = t.replace(/\D/g, '');
+    if (digits) {
+      const code = formatEmployeeCode(u.username || u.id);
+      if (code.toLowerCase().includes(t)) return true;
+      const codeDigits = code.replace(/\D/g, '');
+      if (codeDigits.includes(digits)) return true;
+    }
+    return false;
+  };
+
   const filteredAssignees = activeUsers.filter((u) => {
     const allowedRoles = entity ? entityRoleMap[entity] : [];
     if (allowedRoles.length > 0 && !allowedRoles.includes(u.role)) return false;
-    const term = assigneeInput.toLowerCase();
-    return u.name.toLowerCase().includes(term) || (u.username || '').toLowerCase().includes(term);
+    return matchesAssignee(assigneeInput, u);
   });
 
   if (!isOpen) return null;
@@ -299,7 +315,7 @@ export const RegisterInventoryModal: React.FC<RegisterInventoryModalProps> = ({
                     type="text"
                     className="form-input inv-select-primary-bg"
                     disabled={!entity}
-                    value={assignedUserId ? assigneeInput : ''}
+                    value={assigneeInput}
                     placeholder="-- Select User (Optional) --"
                     onChange={(e) => {
                       const val = e.target.value;
